@@ -58,8 +58,12 @@ export function Header() {
 							{link.label}
 						</a>
 					))}
-					<Button variant="outline" className="rounded-full">Sign In</Button>
-					<Button className="rounded-full">Get Started</Button>
+					<Link href="/sign-in" className={buttonVariants({ variant: 'outline', className: 'rounded-full' })}>
+						Sign In
+					</Link>
+					<Link href="/sign-up" className={buttonVariants({ className: 'rounded-full' })}>
+						Get Started
+					</Link>
 				</div>
 
 				{/* Mobile toggle */}
@@ -101,8 +105,12 @@ export function Header() {
 						))}
 					</div>
 					<div className="flex flex-col gap-2">
-						<Button variant="outline" className="w-full rounded-full">Sign In</Button>
-						<Button className="w-full rounded-full">Get Started</Button>
+						<Link href="/sign-in" onClick={() => setOpen(false)} className={buttonVariants({ variant: 'outline', className: 'w-full rounded-full' })}>
+							Sign In
+						</Link>
+						<Link href="/sign-up" onClick={() => setOpen(false)} className={buttonVariants({ className: 'w-full rounded-full' })}>
+							Get Started
+						</Link>
 					</div>
 				</div>
 			</div>

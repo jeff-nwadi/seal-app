@@ -1,5 +1,28 @@
 type IconProps = React.HTMLAttributes<SVGElement>
 
+/**
+ * Betha Groups "seal" mark — a stylized person/tree.
+ * Used as a compact brand mark on the auth page, favicon, and loading states.
+ */
+export const Seal = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 32 32"
+    fill="currentColor"
+    aria-hidden
+    {...props}
+  >
+    {/* Circular outer ring */}
+    <circle cx="16" cy="16" r="15" fill="none" stroke="currentColor" strokeWidth="2" />
+    {/* Stylized person/tree — trunk */}
+    <rect x="15" y="14" width="2" height="10" rx="1" />
+    {/* Canopy / head */}
+    <circle cx="16" cy="9" r="5" />
+    {/* Branches / arms */}
+    <rect x="7" y="13" width="18" height="2" rx="1" />
+  </svg>
+)
+
 export const Icons = {
   logo: (props: IconProps) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" {...props}>

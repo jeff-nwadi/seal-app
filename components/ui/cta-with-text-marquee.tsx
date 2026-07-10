@@ -124,7 +124,7 @@ export function CTAWithVerticalMarquee() {
               Assembly for free for 14 days.
             </p>
             <div className="flex flex-wrap gap-4 animate-fade-in-up [animation-delay:600ms]">
-              <a href="#" className="btn btn-primary">
+              <a href="/sign-up" className="btn btn-primary">
                 START FREE TRIAL
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </a>
@@ -262,10 +262,10 @@ export function CTAWithHorizontalMarquee() {
               Assembly for free for 14 days.
             </p>
             <div className="flex flex-wrap gap-4 justify-center animate-fade-in-up [animation-delay:600ms]">
-              <button className="group relative px-6 py-3 bg-foreground text-background rounded-md font-medium overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer">
+              <a href="/sign-up" className="group relative px-6 py-3 bg-foreground text-background rounded-md font-medium overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer inline-block">
                 <span className="relative z-10">START FREE TRIAL</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
-              </button>
+              </a>
               <button className="group relative px-6 py-3 bg-secondary text-secondary-foreground rounded-md font-medium overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg border border-border cursor-pointer">
                 <span className="relative z-10">BOOK A 15 MINUTE DEMO</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-foreground/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
