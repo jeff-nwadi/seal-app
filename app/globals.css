@@ -1,26 +1,298 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   shadcn/ui compatibility layer — maps brand tokens to shadcn variable names
+   so Button and other shadcn components resolve their CSS vars correctly.
+   These are defined as standard CSS custom properties (not Tailwind @theme)
+   so they work with arbitrary Tailwind v4 classes like bg-background.
+   --------------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0d0d0d;
+  --foreground: #f0f0f0;
+
+  /* Card */
+  --card: #141414;
+  --card-foreground: #f0f0f0;
+
+  /* Popover */
+  --popover: #141414;
+  --popover-foreground: #f0f0f0;
+
+  /* Brand primary → purple */
+  --primary: #3513a5;
+  --primary-foreground: #ffffff;
+
+  /* Secondary → dark surface */
+  --secondary: #1e1e1e;
+  --secondary-foreground: #f0f0f0;
+
+  /* Muted */
+  --muted: #1e1e1e;
+  --muted-foreground: #a0a0a8;
+
+  /* Accent */
+  --accent: #1e1e1e;
+  --accent-foreground: #f0f0f0;
+
+  /* Destructive */
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  /* Border / Input / Ring */
+  --border: #2a2a2a;
+  --input: #2a2a2a;
+  --ring: #3513a5;
+
+  --radius: 0.5rem;
 }
 
+/* Wire tailwind utilities to the variables above */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-marquee: marquee var(--duration) linear infinite;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  --animate-fade-in-up: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
   }
 }
 
+@keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Seal brand tokens — dark theme
+   --------------------------------------------------------------------------- */
+
+@theme inline {
+  --color-primary: #3513a5;
+  --color-on-primary: #ffffff;
+  --color-ink: #f0f0f0;
+  --color-bone: #0d0d0d;
+
+  --color-bg: #0d0d0d;
+  --color-fg: #f0f0f0;
+  --color-fg-muted: #a0a0a8;
+  --color-fg-faint: #6b6b73;
+  --color-line: #2a2a2a;
+  --color-line-strong: #3a3a3a;
+  --color-surface: #141414;
+
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+}
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-montserrat), sans-serif;
+    font-weight: 700;
+  }
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  scroll-behavior: smooth;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-feature-settings: "ss01";
+  line-height: 1.55;
+  font-size: 17px;
+}
+
+::selection {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+/* Eyebrow micro-label (used as section markers) */
+.eyebrow {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+/* Hairline rule used between sections */
+.hairline {
+  height: 1px;
+  width: 100%;
+  background: var(--color-line);
+}
+
+/* Focus ring consistent with brand */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  z-index: 100;
+  background: var(--color-ink);
+  color: var(--color-bone);
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-weight: 500;
+  transition: top 200ms ease-out;
+}
+.skip-link:focus {
+  top: 16px;
+}
+
+/* CTA button system */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  letter-spacing: 0.005em;
+  cursor: pointer;
+  transition: background 200ms ease-out, color 200ms ease-out,
+    border-color 200ms ease-out, transform 150ms ease-out;
+  white-space: nowrap;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: #3513a5;
+  color: #ffffff;
+  border: 1px solid #3513a5;
+}
+.btn-primary:hover {
+  background: #4a1fd4;
+  border-color: #4a1fd4;
+  color: #ffffff;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-fg);
+  border: 1px solid var(--color-line-strong);
+}
+.btn-ghost:hover {
+  background: #3513a5;
+  color: #ffffff;
+  border-color: #3513a5;
+}
+
+/* Subtle hero entrance — respects reduced-motion via the media query below */
+.hero-rise {
+  animation: rise 600ms ease-out both;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.logo{
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
 }
