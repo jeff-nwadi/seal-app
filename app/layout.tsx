@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
+import { RegisterSW } from "@/components/register-sw";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -19,22 +20,48 @@ const inter = Inter({
   display: "swap",
 });
 
+/**
+ * PWA manifest + iOS / Android meta. Apple specifically reads
+ * `apple-mobile-web-app-capable` (not the modern `mobile-web-app-capable`
+ *); we set both so the "Add to Home Screen" prompt works on Safari
+ * and the install banner shows in Chrome on Android. The 32px favicon
+ * covers the legacy `<link rel="icon">` browser tab; the 192/512 live
+ * in the manifest for the home-screen icon.
+ */
 export const metadata: Metadata = {
   title: "Seal — Send it later.",
   description:
     "A time capsule for the things you want to say at the right moment. Text, audio, video, and images — sealed today, delivered on the date you choose.",
   metadataBase: new URL("https://seal.app"),
+  applicationName: "Seal",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Seal",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   openGraph: {
     title: "Seal — Send it later.",
-    description:
-      "A time capsule for the things you want to say at the right moment.",
+    description: "A time capsule for the things you want to say at the right moment.",
     type: "website",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FFFFFF",
+  // Brand primary — matches `theme_color` in the manifest and the
+  // splash screen background on Android.
+  themeColor: "#3513A5",
   colorScheme: "light",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -60,6 +87,7 @@ export default function RootLayout({
             }}
           />
         </TooltipProvider>
+        <RegisterSW />
       </body>
     </html>
   );
