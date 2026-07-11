@@ -1,29 +1,37 @@
-import { ButtonLink } from "@/components/ui/button-link"
+import { requireSession } from "@/lib/auth"
+import { NewWallForm } from "@/components/NewWallForm"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export const metadata = {
   title: "New Wall — Seal",
+  description: "Start a public time capsule for a group.",
 }
 
-export default function NewWallPage() {
+export default async function NewWallPage() {
+  await requireSession()
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-background px-4 py-16">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>New wall</CardTitle>
-          <CardDescription>
-            Wall creation is part of PRD build order step 2 (after the
-            private capsule loop is end-to-end). This route is a stub so the
-            dashboard CTA doesn't 404.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex gap-2">
-          <ButtonLink href="/dashboard">Back to dashboard</ButtonLink>
-          <ButtonLink href="/dashboard/walls" variant="outline">
-            All walls
-          </ButtonLink>
-        </CardContent>
-      </Card>
+    <div className="w-full min-h-screen bg-background px-4 py-8 sm:py-12">
+      <div className="mx-auto max-w-2xl space-y-6">
+        <header className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight">New wall</h1>
+          <p className="text-sm text-muted-foreground">
+            A wall is a shared capsule that multiple people contribute to.
+            It unlocks for everyone on the open date you pick.
+          </p>
+        </header>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Wall details</CardTitle>
+            <CardDescription>
+              Pick a name and an open date. You&apos;ll get a shareable URL
+              once it&apos;s created.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <NewWallForm />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

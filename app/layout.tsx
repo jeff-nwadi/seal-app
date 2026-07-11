@@ -3,6 +3,7 @@ import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "sonner";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -45,7 +46,20 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", montserrat.variable, inter.variable, "font-sans")}
     >
       <body className="min-h-full bg-bg text-fg">
-        <TooltipProvider>{children}</TooltipProvider>
+        <TooltipProvider>
+          {children}
+          <Toaster
+            theme="light"
+            position="top-center"
+            richColors
+            toastOptions={{
+              classNames: {
+                toast:
+                  "border border-border bg-card text-card-foreground shadow-md",
+              },
+            }}
+          />
+        </TooltipProvider>
       </body>
     </html>
   );

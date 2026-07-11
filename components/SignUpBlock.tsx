@@ -1,30 +1,26 @@
 "use client";
 
 /**
- * Sign-in form (Client Component).
+ * Sign-up form (Client Component).
  *
- * Calls `authClient.signIn.email` from `lib/auth-client.ts` and on success
- * pushes the user to `/dashboard` (or to the `?from=…` URL preserved by
- * `requireSession` in `lib/auth.ts`). On failure the Better Auth error is
- * surfaced inline — no `alert`, no `setTimeout` simulation.
- *
- * Validation: zod. Password is intentionally NOT client-validated beyond
- * "present" — the server is the source of truth for credential checks, and
- * a client-side strength meter would invite misleading UX.
+ * Calls `authClient.signUp.email` from `lib/auth-client.ts`. On success we
+ * push to `/sign-in?from=…` with a friendly note, because email
+ * verification is required (`requireEmailVerification: true` in
+ * `lib/auth.ts`) — the user has to click the link in the verification
+ * email before they can actually sign in.
  */
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import Link from "next/link";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { signIn } from "@/lib/auth-client";
+import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { signUp } from "@/lib/auth-client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import {
   Card,
@@ -35,25 +31,39 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-const signInSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
-  rememberMe: z.boolean(),
-});
+const signUpSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, "Name is required")
+      .max(80, "Name is too long"),
+    email: z.string().email("Please enter a valid email address"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(128, "Password is too long"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords don't match",
+  });
 
-type SignInFormValues = z.infer<typeof signInSchema>;
+type SignUpFormValues = z.infer<typeof signUpSchema>;
 
-export default function SignInBlock() {
+export default function SignUpBlock() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const from = searchParams.get("from") ?? "/dashboard";
-
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const form = useForm<SignInFormValues>({
-    resolver: zodResolver(signInSchema),
-    defaultValues: { email: "", password: "", rememberMe: false },
+  const form = useForm<SignUpFormValues>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
 
   const {
@@ -64,47 +74,42 @@ export default function SignInBlock() {
 
   const onSubmit = handleSubmit(async (values) => {
     setServerError(null);
-    const { error } = await signIn.email({
+    const { error } = await signUp.email({
       email: values.email,
       password: values.password,
-      rememberMe: values.rememberMe,
-      callbackURL: from,
+      name: values.name,
+      callbackURL: "/dashboard",
     });
     if (error) {
-      // Map Better Auth's error codes to a human-readable message. The
-      // common cases are "invalid email or password" (401) and "email
-      // not verified" (403). For anything else, fall back to the raw
-      // message — better to be verbose than to swallow.
       const code = (error as { code?: string }).code;
-      let message: string;
-      if (code === "INVALID_EMAIL_OR_PASSWORD") {
-        message = "Email or password is incorrect.";
-      } else if (code === "EMAIL_NOT_VERIFIED") {
-        message =
-          "Please verify your email before signing in. Check your inbox for the link.";
-      } else {
-        message = error.message ?? "Sign in failed. Please try again.";
-      }
+      const message =
+        code === "USER_ALREADY_EXISTS"
+          ? "An account with that email already exists. Try signing in instead."
+          : (error.message ?? "Sign up failed. Please try again.");
       setServerError(message);
       toast.error(message);
       return;
     }
-    // Better Auth sets the session cookie on the response. We still need
-    // a hard navigation so Server Components re-render with the new
-    // session — a `router.push` to an RSC route is a soft nav, but it
-    // does re-fetch.
-    toast.success("Signed in — welcome back.");
-    router.push(from);
-    router.refresh();
+    // Bounce to sign-in with a banner param the sign-in page can render.
+    // The user can't sign in yet — verification is required — but this
+    // gives them a clear next step.
+    toast.success(
+      "Account created — check your email for the verification link.",
+    );
+    router.push(
+      `/sign-in?from=/dashboard&verify=sent&email=${encodeURIComponent(values.email)}`,
+    );
   });
 
   return (
     <Card className="w-full max-w-sm mx-auto flex flex-col gap-6 border-border">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold tracking-tight">
-          Welcome Back
+          Create your account
         </CardTitle>
-        <CardDescription>Sign in to your account to continue</CardDescription>
+        <CardDescription>
+          Start sealing messages for the future.
+        </CardDescription>
       </CardHeader>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-6" noValidate>
@@ -119,6 +124,31 @@ export default function SignInBlock() {
           )}
 
           <div className="flex flex-col gap-2">
+            <Label htmlFor="name">Name</Label>
+            <div className="relative">
+              <User
+                className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
+                aria-hidden
+              />
+              <Input
+                id="name"
+                type="text"
+                placeholder="Jane Doe"
+                autoComplete="name"
+                disabled={isSubmitting}
+                aria-invalid={!!errors.name}
+                className="pl-9"
+                {...register("name")}
+              />
+            </div>
+            {errors.name && (
+              <p className="text-sm text-destructive" role="alert">
+                {errors.name.message}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
               <Mail
@@ -128,7 +158,7 @@ export default function SignInBlock() {
               <Input
                 id="email"
                 type="email"
-                placeholder="john.doe@example.com"
+                placeholder="jane.doe@example.com"
                 autoComplete="email"
                 disabled={isSubmitting}
                 aria-invalid={!!errors.email}
@@ -144,15 +174,7 @@ export default function SignInBlock() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <Link
-                href="/forgot-password"
-                className="text-sm text-primary hover:underline"
-              >
-                Forgot password?
-              </Link>
-            </div>
+            <Label htmlFor="password">Password</Label>
             <div className="relative">
               <Lock
                 className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
@@ -161,8 +183,8 @@ export default function SignInBlock() {
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                autoComplete="current-password"
+                placeholder="Choose a strong password"
+                autoComplete="new-password"
                 disabled={isSubmitting}
                 aria-invalid={!!errors.password}
                 className="pl-9 pr-9"
@@ -189,22 +211,29 @@ export default function SignInBlock() {
             )}
           </div>
 
-          <div className="flex items-center">
-            <Checkbox
-              id="rememberMe"
-              disabled={isSubmitting}
-              onCheckedChange={(checked) =>
-                form.setValue("rememberMe", checked === true, {
-                  shouldDirty: true,
-                })
-              }
-            />
-            <Label
-              htmlFor="rememberMe"
-              className="ml-2 text-sm font-normal cursor-pointer"
-            >
-              Remember me
-            </Label>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="confirmPassword">Confirm password</Label>
+            <div className="relative">
+              <Lock
+                className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
+                aria-hidden
+              />
+              <Input
+                id="confirmPassword"
+                type={showPassword ? "text" : "password"}
+                placeholder="Repeat your password"
+                autoComplete="new-password"
+                disabled={isSubmitting}
+                aria-invalid={!!errors.confirmPassword}
+                className="pl-9"
+                {...register("confirmPassword")}
+              />
+            </div>
+            {errors.confirmPassword && (
+              <p className="text-sm text-destructive" role="alert">
+                {errors.confirmPassword.message}
+              </p>
+            )}
           </div>
         </CardContent>
 
@@ -217,17 +246,17 @@ export default function SignInBlock() {
             disabled={isSubmitting}
             aria-busy={isSubmitting}
           >
-            {isSubmitting ? "Signing In..." : "Sign In"}
+            {isSubmitting ? "Creating account..." : "Create Account"}
           </Button>
 
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
+              Already have an account?{" "}
               <Link
-                href="/sign-up"
+                href="/sign-in"
                 className="text-foreground font-medium hover:text-primary no-underline"
               >
-                Sign Up
+                Sign In
               </Link>
             </p>
           </div>

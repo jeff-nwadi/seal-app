@@ -1,18 +1,15 @@
-import { LogOut, User } from "lucide-react"
-import { getSession } from "@/lib/auth"
+import { requireSession } from "@/lib/auth"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { ButtonLink } from "@/components/ui/button-link"
 import { NotificationChannels } from "@/components/notification-channels"
+import { ProfileForm } from "@/components/profile-form"
+import { SignOutButton } from "@/components/sign-out-button"
 
 export const metadata = {
   title: "Settings — Dashboard",
 }
 
 export default async function DashboardSettingsPage() {
-  const user = await getSession()
+  const user = await requireSession()
 
   return (
     <>
@@ -30,30 +27,8 @@ export default async function DashboardSettingsPage() {
             Identity attached to the capsules and walls you create.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-2 sm:max-w-sm">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              defaultValue={user.name}
-              // TODO(auth): wire to Better Auth updateUser when wired.
-              readOnly
-              aria-readonly
-            />
-          </div>
-          <div className="grid gap-2 sm:max-w-sm">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              defaultValue={user.email}
-              readOnly
-              aria-readonly
-            />
-            <p className="text-xs text-muted-foreground">
-              Email changes land with the auth integration.
-            </p>
-          </div>
+        <CardContent>
+          <ProfileForm defaultName={user.name} email={user.email} />
         </CardContent>
       </Card>
 
@@ -63,16 +38,12 @@ export default async function DashboardSettingsPage() {
         <CardHeader>
           <CardTitle>Session</CardTitle>
           <CardDescription>
-            Sign out of this device. You'll need to sign in again to access
-            your vault.
+            Sign out of this device. You&apos;ll need to sign in again to
+            access your vault.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* TODO(auth): replace with Better Auth signOut() once wired. */}
-          <ButtonLink href="/sign-in" variant="outline">
-            <LogOut className="size-4" />
-            Sign out
-          </ButtonLink>
+          <SignOutButton />
         </CardContent>
       </Card>
     </>

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   Sidebar,
   SidebarContent,
@@ -28,7 +28,9 @@ import {
   Plus,
   Users,
 } from "lucide-react"
+import { toast } from "sonner"
 import type { SessionUser } from "@/lib/auth"
+import { signOut } from "@/lib/auth-client"
 import { ButtonLink } from "@/components/ui/button-link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
@@ -99,6 +101,14 @@ export function DashboardShell({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const handleSignOut = async () => {
+    await signOut()
+    toast.success("Signed out — see you soon.")
+    router.push("/sign-in")
+    router.refresh()
+  }
 
   return (
     <SidebarProvider>
@@ -186,8 +196,9 @@ export function DashboardShell({
             <SidebarMenuItem>
               <SidebarMenuButton
                 size="lg"
+                onClick={handleSignOut}
                 tooltip={{
-                  children: `${user.name} — ${user.email}`,
+                  children: `${user.name} — ${user.email} (click to sign out)`,
                 }}
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >

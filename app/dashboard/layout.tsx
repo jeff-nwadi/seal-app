@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth"
+import { requireSession } from "@/lib/auth"
 import { DashboardShell } from "@/components/dashboard-shell"
 
 export const metadata = {
@@ -11,6 +11,8 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const user = await getSession()
+  // `requireSession` redirects to `/sign-in?from=…` when the user is not
+  // authenticated. The dashboard is therefore never reachable anonymously.
+  const user = await requireSession()
   return <DashboardShell user={user}>{children}</DashboardShell>
 }
