@@ -26,6 +26,12 @@ interface TextProps {
   onStart?: () => void
   onComplete?: () => void
   autoStart?: boolean
+  /**
+   * When true, skip framer-motion and render the text as a single
+   * inline element. Use to honor `prefers-reduced-motion` without
+   * recreating the component type on every render.
+   */
+  reducedMotion?: boolean
 }
 
 export interface VerticalCutRevealRef {
@@ -58,12 +64,28 @@ const VerticalCutReveal = forwardRef<VerticalCutRevealRef, TextProps>(
       onStart,
       onComplete,
       autoStart = true,
+      reducedMotion,
       ...props
     },
     ref
   ) => {
-    const containerRef = useRef<HTMLSpanElement>(null)
     const text = typeof children === "string" ? children : children?.toString() || ""
+
+    // Reduced-motion path: render text as a single inline element, no splits/animations.
+    if (reducedMotion) {
+      return (
+        <span
+          className={cn(containerClassName)}
+          onClick={onClick}
+          ref={ref as React.Ref<HTMLSpanElement>}
+          {...props}
+        >
+          {text}
+        </span>
+      )
+    }
+
+    const containerRef = useRef<HTMLSpanElement>(null)
     const [isAnimating, setIsAnimating] = useState(false)
 
     // Разделение текста на символы с поддержкой Unicode и эмодзи

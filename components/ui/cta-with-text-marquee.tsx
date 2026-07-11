@@ -123,13 +123,13 @@ export function CTAWithVerticalMarquee() {
               Start getting more distribution and ROI out of your content. Try
               Assembly for free for 14 days.
             </p>
-            <div className="flex flex-wrap gap-4 animate-fade-in-up [animation-delay:600ms]">
+            <div className="flex capitalize flex-wrap gap-4 animate-fade-in-up [animation-delay:600ms]">
               <a href="/sign-up" className="btn btn-primary">
-                START FREE TRIAL
+                 Start free trial
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </a>
               <a href="#" className="btn btn-ghost">
-                BOOK A 15 MINUTE DEMO
+               Book a 15 minute demo
               </a>
             </div>
           </div>

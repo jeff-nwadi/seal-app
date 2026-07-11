@@ -16,6 +16,9 @@ for everyone at a shared `open_date`. Full requirements: `PRD.md`.
   no other ORM
 - **Better Auth** for authentication/sessions (backed by the `users` table in
   `drizzle/schema.ts`)
+- BetterAuth for authentication
+- Arcjet for rate limiting 
+- Tanstack Query for state management 
 - **UploadThing** for all image/audio/video capsule uploads — not Supabase Storage, not S3
 - Resend (email), Twilio (SMS), `web-push` (push notifications)
 - Vercel Cron for scheduled delivery, Vercel for hosting

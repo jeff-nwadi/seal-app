@@ -2,13 +2,13 @@
 
 import { motion, type Variants } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { HexagonBackground } from "@/components/animate-ui/components/backgrounds/hexagon";
 
-const heroStats: { label: string; value: string }[] = [
-  { label: "Capsules delivered", value: "12K+" },
-  { label: "Public walls created", value: "3.4K" },
-  { label: "Messages scheduled", value: "98K+" },
-];
+
+// const heroStats: { label: string; value: string }[] = [
+//   { label: "Capsules delivered", value: "12K+" },
+//   { label: "Public walls created", value: "3.4K" },
+//   { label: "Messages scheduled", value: "98K+" },
+// ];
 
 const containerVariants: Variants = {
   hidden: { opacity: 0, y: 24 },
@@ -93,7 +93,7 @@ export function GlowyWavesHero() {
             </a>  
           </motion.div>
 
-          <motion.div
+          {/* <motion.div
             variants={statsVariants}
             className="grid gap-4 rounded-2xl border border-border/30 bg-background/70 p-6 backdrop-blur-sm sm:grid-cols-3"
           >
@@ -111,7 +111,8 @@ export function GlowyWavesHero() {
                 </div>
               </motion.div>
             ))}
-          </motion.div>
+          </motion.div> */}
+
         </motion.div>
       </div>
     </section>

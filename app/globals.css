@@ -18,6 +18,20 @@
   --popover: #141414;
   --popover-foreground: #f0f0f0;
 
+  /* Sidebar (animate-ui sidebar primitive).
+     `accent` is the highlight color used on hover and for the active item,
+     so it must contrast strongly against `sidebar` for hover to be
+     perceivable. The site is currently on a dark theme; a ~25% step up in
+     lightness gives a clear hover/active state. */
+  --sidebar: #0f0f0f;
+  --sidebar-foreground: #f0f0f0;
+  --sidebar-primary: #3513a5;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #2a2a2a;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #2a2a2a;
+  --sidebar-ring: #3513a5;
+
   /* Brand primary → purple */
   --primary: #3513a5;
   --primary-foreground: #ffffff;
@@ -289,6 +303,16 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+  /* Tailwind animate-* utilities + framer-motion's inline transforms */
+  [class*="animate-"] {
+    animation: none !important;
+  }
+  /* Inline transform/opacity set by framer-motion — collapse to final state. */
+  [style*="transform"],
+  [style*="opacity"] {
+    transform: none !important;
+    opacity: 1 !important;
   }
 }
 

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -44,7 +45,7 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", montserrat.variable, inter.variable, "font-sans")}
     >
       <body className="min-h-full bg-bg text-fg">
-        {children}
+        <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>
   );

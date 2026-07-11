@@ -3,9 +3,12 @@ import { TimelineContent } from "@/components/ui/timeline-animation";
 import { VerticalCutReveal } from "@/components/ui/vertical-cut-reveal";
 import { ArrowRight } from "lucide-react";
 import { useRef } from "react";
+import { useReducedMotion } from "framer-motion";
 
 export default function AboutSection3() {
   const heroRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion() ?? false;
+
   const revealVariants = {
     visible: (i: number) => ({
       y: 0,
@@ -36,19 +39,31 @@ export default function AboutSection3() {
       opacity: 0,
     },
   };
+
   return (
-    <section className="py-8 px-4 bg-background border-t border-border" ref={heroRef}>
+    <section
+      className="py-8 px-4 bg-background border-t border-border"
+      ref={heroRef}
+    >
       <div className="max-w-6xl mx-auto">
         <div className="relative">
           {/* Header with eyebrow and social icons */}
           <div className="flex justify-between items-center mb-8 w-[85%] absolute lg:top-4 md:top-0 sm:-top-2 -top-3 z-10">
             <div className="flex items-center gap-2 text-xl">
-              <span className="text-primary animate-spin">✱</span>
+              <span
+                className="text-primary"
+                // Drop the spin entirely when reduced motion is requested.
+                style={reduced ? undefined : { animation: "spin 4s linear infinite" }}
+                aria-hidden
+              >
+                ✱
+              </span>
               <TimelineContent
                 as="span"
                 animationNum={0}
                 timelineRef={heroRef}
                 customVariants={revealVariants}
+                reducedMotion={reduced}
                 className="eyebrow"
               >
                 WHO WE ARE
@@ -61,6 +76,7 @@ export default function AboutSection3() {
             animationNum={4}
             timelineRef={heroRef}
             customVariants={scaleVariants}
+            reducedMotion={reduced}
             className="relative group"
           >
             <svg
@@ -97,6 +113,7 @@ export default function AboutSection3() {
               animationNum={5}
               timelineRef={heroRef}
               customVariants={revealVariants}
+              reducedMotion={reduced}
               className="flex gap-4"
             >
               <div className="flex items-center gap-2 mb-2 sm:text-base text-xs">
@@ -115,6 +132,7 @@ export default function AboutSection3() {
                 animationNum={6}
                 timelineRef={heroRef}
                 customVariants={revealVariants}
+                reducedMotion={reduced}
                 className="flex lg:text-4xl sm:text-3xl text-2xl items-center gap-2 mb-2"
               >
                 <span className="text-primary font-semibold">100+</span>
@@ -125,6 +143,7 @@ export default function AboutSection3() {
                 animationNum={7}
                 timelineRef={heroRef}
                 customVariants={revealVariants}
+                reducedMotion={reduced}
                 className="flex items-center gap-2 mb-2 sm:text-base text-xs"
               >
                 <span className="text-primary font-bold">30%</span>
@@ -143,6 +162,7 @@ export default function AboutSection3() {
                 staggerDuration={0.1}
                 staggerFrom="first"
                 reverse={true}
+                reducedMotion={reduced}
                 transition={{
                   type: "spring",
                   stiffness: 250,
@@ -159,6 +179,7 @@ export default function AboutSection3() {
               animationNum={9}
               timelineRef={heroRef}
               customVariants={revealVariants}
+              reducedMotion={reduced}
               className="grid md:grid-cols-2 gap-8 text-muted-foreground"
             >
               <TimelineContent
@@ -166,6 +187,7 @@ export default function AboutSection3() {
                 animationNum={10}
                 timelineRef={heroRef}
                 customVariants={revealVariants}
+                reducedMotion={reduced}
                 className="sm:text-base text-xs"
               >
                 <p className="leading-relaxed text-justify">
@@ -179,6 +201,7 @@ export default function AboutSection3() {
                 animationNum={11}
                 timelineRef={heroRef}
                 customVariants={revealVariants}
+                reducedMotion={reduced}
                 className="sm:text-base text-xs"
               >
                 <p className="leading-relaxed text-justify">
@@ -197,6 +220,7 @@ export default function AboutSection3() {
                 animationNum={12}
                 timelineRef={heroRef}
                 customVariants={revealVariants}
+                reducedMotion={reduced}
                 className="text-primary text-2xl font-bold mb-2 tracking-wide"
               >
                 SEAL
@@ -206,6 +230,7 @@ export default function AboutSection3() {
                 animationNum={13}
                 timelineRef={heroRef}
                 customVariants={revealVariants}
+                reducedMotion={reduced}
                 className="text-muted-foreground text-sm mb-8"
               >
                 Time-sealed communication platform
@@ -216,6 +241,7 @@ export default function AboutSection3() {
                 animationNum={14}
                 timelineRef={heroRef}
                 customVariants={revealVariants}
+                reducedMotion={reduced}
                 className="mb-6"
               >
                 <p className="text-foreground font-medium mb-4">
@@ -225,10 +251,11 @@ export default function AboutSection3() {
 
               <TimelineContent
                 as="a"
-                href="#"
+                href="/sign-up"
                 animationNum={15}
                 timelineRef={heroRef}
                 customVariants={revealVariants}
+                reducedMotion={reduced}
                 className="btn btn-primary ml-auto w-fit"
               >
                 GET STARTED <ArrowRight className="h-4 w-4" />
