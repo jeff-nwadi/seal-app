@@ -277,7 +277,7 @@ body {
   background: transparent;
   color: var(--color-fg);
   border: 1px solid var(--color-line);
-}
+} 
 .btn-ghost:hover {
   background: var(--color-primary-foreground);
   color: var(--color-fg);
@@ -299,28 +299,52 @@ body {
   }
 }
 
-/* Reduced motion */
+/* ---------------------------------------------------------------------------
+   Animations are disabled site-wide (per request).
+
+   This block was previously scoped to `prefers-reduced-motion: reduce` —
+   a polite fallback that only kicked in when the user had already
+   expressed a preference. We've moved it to the unconditional layer
+   so the entire app renders static, with no scroll-into-view reveals,
+   no hover/focus transitions, no Tailwind animate-* utilities, and
+   no framer-motion inline transforms.
+
+   The rules are still wrapped in `*` selectors so the cascade wins
+   over any component-level CSS. `!important` is required because
+   framer-motion sets inline styles (style="opacity: 0; transform: …")
+   on mount; only !important overrides the inline cascade.
+   --------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  animation-duration: 0.001ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  transition-delay: 0ms !important;
+  scroll-behavior: auto !important;
+}
+html {
+  scroll-behavior: auto;
+}
+/* Tailwind animate-* utilities — kill the keyframes outright. */
+[class*="animate-"] {
+  animation: none !important;
+}
+/* Inline transform/opacity set by framer-motion — collapse to final
+   state (the values the user would have seen at the end of the tween). */
+[style*="transform"],
+[style*="opacity"] {
+  transform: none !important;
+  opacity: 1 !important;
+}
+
+/* Reduced motion — kept as an additional safety net for users with the
+   OS-level preference set. Identical to the unconditional block above
+   so behaviour is the same regardless of the user's setting. */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
-  }
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
-  /* Tailwind animate-* utilities + framer-motion's inline transforms */
-  [class*="animate-"] {
-    animation: none !important;
-  }
-  /* Inline transform/opacity set by framer-motion — collapse to final state. */
-  [style*="transform"],
-  [style*="opacity"] {
-    transform: none !important;
-    opacity: 1 !important;
   }
 }
 

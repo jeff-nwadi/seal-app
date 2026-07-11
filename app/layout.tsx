@@ -56,11 +56,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Brand primary — matches `theme_color` in the manifest and the
-  // splash screen background on Android. Neutral dark palette uses
-  // the page background so the mobile browser chrome blends in.
-  themeColor: "#101010",
-  colorScheme: "dark",
+  // Brand primary (Betha Groups #3513A5) — matches `theme_color` in the
+  // manifest and the Android splash screen background. The app itself
+  // is light-themed (see `app/globals.css`), so the mobile browser
+  // chrome should sit on white.
+  themeColor: "#3513A5",
+  colorScheme: "light",
   width: "device-width",
   initialScale: 1,
 };

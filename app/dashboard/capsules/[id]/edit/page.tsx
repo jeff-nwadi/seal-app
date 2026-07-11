@@ -12,6 +12,10 @@ export const metadata = {
   description: "Edit a scheduled or draft capsule.",
 }
 
+// The edit page reads the live capsule row. Always re-fetch on
+// navigation so an edit made in another tab shows up immediately.
+export const dynamic = "force-dynamic"
+
 /**
  * `/dashboard/capsules/[id]/edit`
  *

@@ -4,6 +4,13 @@ import { getOverview } from "@/lib/dashboard/queries"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ButtonLink } from "@/components/ui/button-link"
 
+// Always re-fetch on navigation. Without this, Next.js may serve a
+// cached page where the "Scheduled / Delivered / Walls" tiles still
+// read 0 after the user creates a new capsule from /capsules/new and
+// navigates back to /dashboard. The data is per-user and changes
+// constantly, so a static cache is never what we want here.
+export const dynamic = "force-dynamic"
+
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, {
     day: "numeric",

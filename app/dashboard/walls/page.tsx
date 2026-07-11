@@ -117,6 +117,10 @@ export const metadata = {
   title: "Walls — Dashboard",
 }
 
+// Walls the user organizes or contributes to change every time they
+// create / contribute / unlock one. Always re-fetch on navigation.
+export const dynamic = "force-dynamic"
+
 export default async function DashboardWallsPage() {
   const walls = await getWalls()
   const organize = walls.filter((w) => w.role === "organizer")

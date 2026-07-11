@@ -5,7 +5,8 @@ import { GlowyWavesHero } from "@/components/ui/glowy-waves-hero-shadcnui";
 import { Feature } from "@/components/Feature";
 import { HowItWorks } from "@/components/HowItWorks";
 import { About } from "@/components/About";
-import { CTA } from "@/components/CTA";
+import { InstallSection } from "@/components/InstallSection";
+import { FinalCTA } from "@/components/FinalCTA";
 import { Footer } from "@/components/Footer";
 
 export default function Home() {
@@ -25,8 +26,12 @@ export default function Home() {
 			{/* How It Works Section */}
 			<HowItWorks />
 
-			{/* CTA Section */}
-			<CTA />
+			{/* Install-as-app callout. Lives before the final CTA so
+			    visitors see the option at least once before they convert. */}
+			<InstallSection />
+
+			{/* Final CTA — simple, single message, two actions. */}
+			<FinalCTA />
 
 			{/* Footer Section */}
 			<Footer />

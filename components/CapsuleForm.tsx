@@ -437,7 +437,9 @@ export function CapsuleForm({
                 </p>
               )}
               <p className="text-xs text-muted-foreground">
-                We&apos;ll deliver within 10 minutes of this time.
+                We&apos;ll email the recipient on this date. The cron runs
+                every 10 minutes, so a freshly-sealed capsule can take up
+                to 10 min to deliver once its time arrives.
               </p>
             </div>
           )}

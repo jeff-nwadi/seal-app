@@ -58,6 +58,9 @@ export function Header() {
 							{link.label}
 						</a>
 					))}
+					{/* PWA install is on the landing page — see
+					    <InstallSection />. The header stays focused on
+					    auth / navigation. */}
 					<Link href="/sign-in" className={buttonVariants({ variant: 'outline', className: 'rounded-full' })}>
 						Sign In
 					</Link>

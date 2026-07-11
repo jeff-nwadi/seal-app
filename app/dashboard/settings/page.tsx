@@ -8,6 +8,10 @@ export const metadata = {
   title: "Settings — Dashboard",
 }
 
+// Settings page reads the live user row (notification flags, name).
+// Re-fetch on every navigation so toggles stick immediately.
+export const dynamic = "force-dynamic"
+
 export default async function DashboardSettingsPage() {
   const user = await requireSession()
 
