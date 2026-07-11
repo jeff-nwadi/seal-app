@@ -6,6 +6,13 @@ export const metadata = {
   description: "Sign in to your Seal account.",
 };
 
+// Defensive: the page transitively imports `authClient`, which would
+// otherwise be evaluated at build time during prerender. `await
+// searchParams` already opts the page into dynamic rendering, but
+// being explicit prevents future refactors from accidentally making
+// it static.
+export const dynamic = "force-dynamic";
+
 export default async function SignInPage({
   searchParams,
 }: {

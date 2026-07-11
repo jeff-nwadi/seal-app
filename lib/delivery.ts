@@ -10,6 +10,7 @@
  * `notification` row as `failed` with the error message and moves on.
  */
 import { sendMail } from "@/lib/email";
+import { resolveBaseUrl } from "@/lib/base-url";
 import type {
   CapsuleContentRow,
   CapsuleRow,
@@ -21,8 +22,7 @@ const FROM_ADDRESS = (() => {
   return user ? `Seal via ${user} <${user}>` : "Seal <noreply@seal.app>";
 })();
 
-const PUBLIC_BASE_URL =
-  process.env.NEXT_PUBLIC_BETTER_AUTH_URL ?? "http://localhost:3000";
+const PUBLIC_BASE_URL = resolveBaseUrl();
 
 /**
  * Build the subject + HTML body for a private capsule email.

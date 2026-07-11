@@ -12,9 +12,14 @@
 "use client";
 
 import { createAuthClient } from "better-auth/react";
+import { resolveBaseUrl } from "@/lib/base-url";
 
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
+  // Better Auth's URL parser requires a full URL with a protocol.
+  // The env var on Vercel is often a bare host (e.g. "my-app.vercel.app")
+  // with a stray newline from copy-paste; `resolveBaseUrl` handles both
+  // cases. See `lib/base-url.ts` for the resolution order.
+  baseURL: resolveBaseUrl(),
 });
 
 export const { signIn, signUp, signOut, useSession, updateUser } = authClient;

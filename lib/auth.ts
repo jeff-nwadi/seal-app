@@ -9,8 +9,15 @@ import { db } from "@/lib/db";
 import * as schema from "@/drizzle/schema";
 import { user } from "@/drizzle/schema";
 import { sendPasswordResetEmail, sendVerificationEmail } from "@/lib/email";
+import { resolveBaseUrl } from "@/lib/base-url";
 
 export const auth = betterAuth({
+  // Same resolution as the client (`lib/auth-client.ts`). Better Auth
+  // would otherwise try to derive this from request headers, which
+  // works in a server handler but fails during static prerendering of
+  // /forgot-password (it runs at build time with no request). Passing
+  // the resolved URL explicitly is the documented fix.
+  baseURL: resolveBaseUrl(),
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
