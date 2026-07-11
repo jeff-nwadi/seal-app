@@ -23,7 +23,6 @@ import {
   Home,
   Mail,
   Settings,
-  Shield,
   LogOut,
   Plus,
   Users,
@@ -33,6 +32,7 @@ import type { SessionUser } from "@/lib/auth"
 import { signOut } from "@/lib/auth-client"
 import { ButtonLink } from "@/components/ui/button-link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Seal } from "@/components/ui/icons"
 
 interface NavItem {
   label: string
@@ -123,7 +123,7 @@ export function DashboardShell({
               >
                 <Link href="/" prefetch>
                   <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                    <Shield className="size-4" />
+                    <Seal className="size-5" />
                   </div>
                   <div className="flex flex-col gap-0.5 leading-none">
                     <span className="font-semibold">Seal</span>
