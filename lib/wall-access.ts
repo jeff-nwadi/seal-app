@@ -405,7 +405,12 @@ export interface OverviewStatsRaw {
 export async function getOverviewStats(
   viewerId: string,
 ): Promise<OverviewStatsRaw> {
-  const [statusCounts] = await db
+  // `db.select(...).groupBy(...)` returns the rows directly as an array
+  // (NOT a `{ rows: [...] }` wrapper). One row per group: e.g.
+  // `[{ status: "scheduled", count: 2 }, { status: "delivered", count: 0 }]`.
+  // If a group has no rows it is omitted from the result entirely, so we
+  // default missing statuses to zero below.
+  const statusRows = await db
     .select({
       status: capsule.status,
       count: sql<number>`count(*)::int`,
@@ -419,13 +424,10 @@ export async function getOverviewStats(
     )
     .groupBy(capsule.status);
 
-  // Drizzle's `select().groupBy()` always returns an array — possibly
-  // empty if no rows match. The empty case short-circuits to zeros.
-  const rows = Array.isArray(statusCounts) ? statusCounts : [];
   const scheduled =
-    rows.find((r) => r.status === "scheduled")?.count ?? 0;
+    statusRows.find((r) => r.status === "scheduled")?.count ?? 0;
   const delivered =
-    rows.find((r) => r.status === "delivered")?.count ?? 0;
+    statusRows.find((r) => r.status === "delivered")?.count ?? 0;
 
   // Walls = walls organized + walls contributed (distinct).
   const [organizedCount] = await db
