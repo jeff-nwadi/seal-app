@@ -1,5 +1,6 @@
 
 import { NextResponse, type NextRequest } from "next/server";
+import { getSessionCookie } from "better-auth/cookies";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -17,13 +18,20 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // The presence of the Better Auth session cookie is a cheap check; the
-  // server-side `requireSession` re-validates it (and is the real gate).
-  // The cookie name is `better-auth.session_token` by default. We avoid
-  // importing Better Auth here so the middleware stays a thin edge
-  // function — import cost on every request would be significant.
-  const hasSession = request.cookies.has("better-auth.session_token");
-  if (hasSession) {
+  // Cheap session-presence check before we let the request hit a
+  // server component. The server-side `requireSession` re-validates
+  // the cookie and is the real gate — this is just to short-circuit
+  // unauthenticated traffic and produce a clean redirect.
+  //
+  // We use Better Auth's `getSessionCookie` helper rather than a hard-
+  // coded cookie name because Better Auth prefixes the session cookie
+  // with `__Secure-` on HTTPS origins (e.g. Vercel production). A bare
+  // `request.cookies.has("better-auth.session_token")` check would
+  // miss the `__Secure-better-auth.session_token` cookie that the
+  // browser actually sends in production, so an authenticated user
+  // would get bounced back to /sign-in even though login succeeded.
+  const sessionToken = getSessionCookie(request);
+  if (sessionToken) {
     return NextResponse.next();
   }
 
