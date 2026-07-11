@@ -204,11 +204,9 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          // Mobile panel — use `bg-card` (`#141414`) rather than
-          // `bg-sidebar` (`#0f0f0f`) because the latter is nearly
-          // identical to the body bg (`#0d0d0d`) and reads as
-          // transparent. The right border gives a clean edge against
-          // the page.
+          // Mobile panel — `bg-card` is the ash surface (`#1C1C1E`) and
+          // reads clearly against the page bg (`#101010`). The right
+          // border gives a clean edge.
           className="bg-card text-sidebar-foreground w-(--sidebar-width) border-r border-sidebar-border p-0 [&>button]:hidden"
           style={
             {

@@ -5,57 +5,65 @@
    so Button and other shadcn components resolve their CSS vars correctly.
    These are defined as standard CSS custom properties (not Tailwind @theme)
    so they work with arbitrary Tailwind v4 classes like bg-background.
+
+   Threads-style neutral dark palette: charcoal background, ash surfaces,
+   white text, no chromatic accents. `primary` is white (so default Button
+   becomes a white pill with black text per spec); `primary-foreground` is
+   black (text on a primary surface).
    --------------------------------------------------------------------------- */
 :root {
-  --background: #0d0d0d;
-  --foreground: #f0f0f0;
+  --background: #101010;
+  --foreground: #ffffff;
 
   /* Card */
-  --card: #141414;
-  --card-foreground: #f0f0f0;
+  --card: #1c1c1e;
+  --card-foreground: #ffffff;
 
   /* Popover */
-  --popover: #141414;
-  --popover-foreground: #f0f0f0;
+  --popover: #1c1c1e;
+  --popover-foreground: #ffffff;
 
   /* Sidebar (animate-ui sidebar primitive).
      `accent` is the highlight color used on hover and for the active item,
      so it must contrast strongly against `sidebar` for hover to be
-     perceivable. The site is currently on a dark theme; a ~25% step up in
-     lightness gives a clear hover/active state. */
-  --sidebar: #0f0f0f;
-  --sidebar-foreground: #f0f0f0;
-  --sidebar-primary: #3513a5;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #2a2a2a;
+     perceivable. The site is on a dark theme; a step up in lightness gives
+     a clear hover/active state. */
+  --sidebar: #101010;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #2c2c2e;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #2a2a2a;
-  --sidebar-ring: #3513a5;
+  --sidebar-border: #2c2c2e;
+  --sidebar-ring: #ffffff;
 
-  /* Brand primary → purple */
-  --primary: #3513a5;
-  --primary-foreground: #ffffff;
+  /* Brand primary → white (inverted, Threads-style "Add" button). All
+     `bg-primary` / `text-primary` references in components resolve to
+     white, and `bg-primary text-primary-foreground` is the white-on-black
+     pill. */
+  --primary: #ffffff;
+  --primary-foreground: #000000;
 
-  /* Secondary → dark surface */
-  --secondary: #1e1e1e;
-  --secondary-foreground: #f0f0f0;
+  /* Secondary → ash surface */
+  --secondary: #1c1c1e;
+  --secondary-foreground: #ffffff;
 
   /* Muted */
-  --muted: #1e1e1e;
-  --muted-foreground: #a0a0a8;
+  --muted: #1c1c1e;
+  --muted-foreground: #8e8e93;
 
   /* Accent */
-  --accent: #1e1e1e;
-  --accent-foreground: #f0f0f0;
+  --accent: #1c1c1e;
+  --accent-foreground: #ffffff;
 
   /* Destructive */
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
 
   /* Border / Input / Ring */
-  --border: #2a2a2a;
-  --input: #2a2a2a;
-  --ring: #3513a5;
+  --border: #2c2c2e;
+  --input: #2c2c2e;
+  --ring: #ffffff;
 
   --radius: 0.5rem;
 }
@@ -139,22 +147,22 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Seal brand tokens — dark theme
+   Seal brand tokens — neutral dark palette (Threads-style)
    --------------------------------------------------------------------------- */
 
 @theme inline {
-  --color-primary: #3513a5;
-  --color-on-primary: #ffffff;
-  --color-ink: #f0f0f0;
-  --color-bone: #0d0d0d;
+  --color-primary: #ffffff;
+  --color-on-primary: #000000;
+  --color-ink: #ffffff;
+  --color-bone: #101010;
 
-  --color-bg: #0d0d0d;
-  --color-fg: #f0f0f0;
-  --color-fg-muted: #a0a0a8;
+  --color-bg: #101010;
+  --color-fg: #ffffff;
+  --color-fg-muted: #8e8e93;
   --color-fg-faint: #6b6b73;
-  --color-line: #2a2a2a;
+  --color-line: #2c2c2e;
   --color-line-strong: #3a3a3a;
-  --color-surface: #141414;
+  --color-surface: #1c1c1e;
 
   --font-sans: var(--font-inter), system-ui, sans-serif;
 }
@@ -187,8 +195,8 @@ body {
 }
 
 ::selection {
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  background: var(--color-fg);
+  color: var(--color-bg);
 }
 
 /* Eyebrow micro-label (used as section markers) */
@@ -198,7 +206,7 @@ body {
   font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--color-primary);
+  color: var(--color-fg-muted);
 }
 
 /* Hairline rule used between sections */
@@ -210,7 +218,7 @@ body {
 
 /* Focus ring consistent with brand */
 :where(a, button, input, textarea, select, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-fg);
   outline-offset: 3px;
   border-radius: 2px;
 }
@@ -255,25 +263,25 @@ body {
 }
 
 .btn-primary {
-  background: #3513a5;
-  color: #ffffff;
-  border: 1px solid #3513a5;
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid #ffffff;
 }
 .btn-primary:hover {
-  background: #4a1fd4;
-  border-color: #4a1fd4;
-  color: #ffffff;
+  background: #e5e5e5;
+  border-color: #e5e5e5;
+  color: #000000;
 }
 
 .btn-ghost {
   background: transparent;
   color: var(--color-fg);
-  border: 1px solid var(--color-line-strong);
+  border: 1px solid var(--color-line);
 }
 .btn-ghost:hover {
-  background: #3513a5;
-  color: #ffffff;
-  border-color: #3513a5;
+  background: var(--color-primary-foreground);
+  color: var(--color-fg);
+  border-color: var(--color-primary-foreground);
 }
 
 /* Subtle hero entrance — respects reduced-motion via the media query below */

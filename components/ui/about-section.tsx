@@ -108,7 +108,7 @@ export default function AboutSection3() {
 
           {/* Stats */}
           <div className="flex flex-wrap lg:justify-start justify-between items-center py-3 text-sm">
-            <TimelineContent
+            {/* <TimelineContent
               as="div"
               animationNum={5}
               timelineRef={heroRef}
@@ -125,7 +125,7 @@ export default function AboutSection3() {
                 <span className="text-primary font-bold">3 million</span>
                 <span className="text-muted-foreground">words</span>
               </div>
-            </TimelineContent>
+            </TimelineContent> */}
             <div className="lg:absolute right-0 bottom-16 flex lg:flex-col flex-row-reverse lg:gap-0 gap-4">
               <TimelineContent
                 as="div"
@@ -215,27 +215,7 @@ export default function AboutSection3() {
 
           <div className="md:col-span-1">
             <div className="text-right">
-              <TimelineContent
-                as="div"
-                animationNum={12}
-                timelineRef={heroRef}
-                customVariants={revealVariants}
-                reducedMotion={reduced}
-                className="text-primary text-2xl font-bold mb-2 tracking-wide"
-              >
-                SEAL
-              </TimelineContent>
-              <TimelineContent
-                as="div"
-                animationNum={13}
-                timelineRef={heroRef}
-                customVariants={revealVariants}
-                reducedMotion={reduced}
-                className="text-muted-foreground text-sm mb-8"
-              >
-                Time-sealed communication platform
-              </TimelineContent>
-
+              
               <TimelineContent
                 as="div"
                 animationNum={14}
@@ -256,7 +236,7 @@ export default function AboutSection3() {
                 timelineRef={heroRef}
                 customVariants={revealVariants}
                 reducedMotion={reduced}
-                className="btn btn-primary ml-auto w-fit"
+                className="btn bg-primary text-primary-foreground ml-auto w-fit"
               >
                 GET STARTED <ArrowRight className="h-4 w-4" />
               </TimelineContent>

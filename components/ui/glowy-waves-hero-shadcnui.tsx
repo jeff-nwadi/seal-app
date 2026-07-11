@@ -84,13 +84,13 @@ export function GlowyWavesHero() {
             variants={itemVariants}
             className="mb-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
           >
-            <a href="#" className="btn bg-primary text-white">
+            <a href="#" className="btn bg-primary text-primary-foreground">
               Create a Capsule
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </a>
-            <a href="#features" className="btn btn-ghost hover:bg-primary">
+            <a href="#features" className="btn btn-ghost">
               See how it works
-            </a>  
+            </a>
           </motion.div>
 
           {/* <motion.div

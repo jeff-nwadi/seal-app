@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ButtonLink } from "@/components/ui/button-link"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { CapsuleRowActions } from "@/components/capsule-row-actions"
 import type { Capsule, ContentType, CapsuleStatus } from "@/lib/dashboard/queries"
 
 const contentIcon: Record<ContentType, React.ComponentType<{ className?: string }>> = {
@@ -30,6 +31,17 @@ const statusVariant: Record<
   scheduled: "default",
   delivered: "secondary",
   draft: "outline",
+}
+
+/**
+ * Per AGENTS.md, capsules can be edited/deleted only while they're
+ * still in flight — `draft` (work-in-progress) or `scheduled` (locked
+ * in but not yet delivered). `delivered` is immutable; `failed`
+ * surfaces here as "delivered" today (see `lib/dashboard/queries.ts`)
+ * so it falls through to read-only as a side-effect.
+ */
+function isEditable(s: CapsuleStatus): boolean {
+  return s === "scheduled" || s === "draft"
 }
 
 function formatDate(iso: string): string {
@@ -119,6 +131,9 @@ export function CapsulesList({ capsules }: { capsules: Capsule[] }) {
                     <th scope="col" className="px-4 py-3 font-medium">Delivers</th>
                     <th scope="col" className="px-4 py-3 font-medium">Type</th>
                     <th scope="col" className="px-4 py-3 font-medium">Status</th>
+                    <th scope="col" className="px-4 py-3 font-medium">
+                      <span className="sr-only">Actions</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -142,6 +157,15 @@ export function CapsulesList({ capsules }: { capsules: Capsule[] }) {
                             {c.status}
                           </Badge>
                         </td>
+                        <td className="px-4 py-3 text-right">
+                          {isEditable(c.status) ? (
+                            <CapsuleRowActions id={c.id} title={c.title} />
+                          ) : (
+                            <span className="text-xs text-muted-foreground" aria-label="Read-only">
+                              —
+                            </span>
+                          )}
+                        </td>
                       </tr>
                     )
                   })}
@@ -154,25 +178,30 @@ export function CapsulesList({ capsules }: { capsules: Capsule[] }) {
               {filtered.map((c) => {
                 const Icon = contentIcon[c.contentType]
                 return (
-                  <li key={c.id} className="flex items-start gap-3 px-4 py-3">
-                    <Icon
-                      className="mt-0.5 size-4 shrink-0 text-muted-foreground"
-                      aria-hidden
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="font-medium truncate">{c.title}</p>
-                        <Badge variant={statusVariant[c.status]} className="capitalize shrink-0">
-                          {c.status}
-                        </Badge>
+                  <li key={c.id} className="flex flex-col gap-3 px-4 py-3">
+                    <div className="flex items-start gap-3">
+                      <Icon
+                        className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                        aria-hidden
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="font-medium truncate">{c.title}</p>
+                          <Badge variant={statusVariant[c.status]} className="capitalize shrink-0">
+                            {c.status}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">
+                          To {c.recipient}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDate(c.deliveryDate)}
+                        </p>
                       </div>
-                      <p className="text-xs text-muted-foreground truncate">
-                        To {c.recipient}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(c.deliveryDate)}
-                      </p>
                     </div>
+                    {isEditable(c.status) && (
+                      <CapsuleRowActions id={c.id} title={c.title} />
+                    )}
                   </li>
                 )
               })}

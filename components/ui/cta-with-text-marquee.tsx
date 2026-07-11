@@ -124,7 +124,7 @@ export function CTAWithVerticalMarquee() {
               Assembly for free for 14 days.
             </p>
             <div className="flex capitalize flex-wrap gap-4 animate-fade-in-up [animation-delay:600ms]">
-              <a href="/sign-up" className="btn btn-primary">
+              <a href="/sign-up" className="btn bg-primary text-primary-foreground">
                  Start free trial
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </a>
