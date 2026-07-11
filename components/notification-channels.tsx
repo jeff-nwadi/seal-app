@@ -1,7 +1,8 @@
 "use client"
 
-import { Mail, MessageSquare, Bell, Save } from "lucide-react"
-import { useState } from "react"
+import { Mail, MessageSquare, Bell, Save, Loader2 } from "lucide-react"
+import { useRef, useState } from "react"
+import { toast } from "sonner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
@@ -19,9 +20,53 @@ export function NotificationChannels({
 }: {
   initial: ChannelState
 }) {
+  // Snapshot the initial value once so `isDirty` survives subsequent
+  // state updates. Using `useRef(initial)` (not `useRef()`) means the
+  // ref is fixed at mount; that's correct here because the parent
+  // page is a Server Component that re-renders the whole tree on
+  // navigation, and a "live" initial would re-mount the form mid-edit.
+  const initialRef = useRef<ChannelState>(initial)
   const [channels, setChannels] = useState<ChannelState>(initial)
-  // TODO(persistence): post to /api/profile/notification-channels when the
-  // endpoint exists. Until then, state is local to this view.
+  const [isSaving, setIsSaving] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  const isDirty =
+    channels.email !== initialRef.current.email ||
+    channels.sms !== initialRef.current.sms ||
+    channels.push !== initialRef.current.push
+
+  async function handleSave() {
+    setErrorMessage(null)
+    setIsSaving(true)
+    try {
+      const res = await fetch("/api/profile/notification-channels", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(channels),
+      })
+      if (!res.ok) {
+        // The API returns `{ error: "..." }` on 400/401/422. Pull the
+        // message for the inline banner; fall back to a generic line
+        // for transport errors that don't carry a body.
+        const body = (await res.json().catch(() => null)) as
+          | { error?: string }
+          | null
+        const message = body?.error ?? "Could not save your preferences."
+        setErrorMessage(message)
+        toast.error(message)
+        return
+      }
+      // Re-snapshot so `isDirty` resets to false on success.
+      initialRef.current = channels
+      toast.success("Notification preferences saved.")
+    } catch {
+      const message = "Network error — please try again."
+      setErrorMessage(message)
+      toast.error(message)
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   return (
     <Card>
@@ -33,6 +78,15 @@ export function NotificationChannels({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {errorMessage && (
+          <div
+            role="alert"
+            className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md"
+          >
+            {errorMessage}
+          </div>
+        )}
+
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <Mail className="mt-0.5 size-4 text-muted-foreground" aria-hidden />
@@ -101,15 +155,24 @@ export function NotificationChannels({
         </div>
 
         <div className="flex justify-end pt-2">
-          <Button size="sm" disabled>
-            <Save className="size-4" />
-            Save changes
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={isSaving || !isDirty}
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="size-4 animate-spin" aria-hidden />
+                Saving…
+              </>
+            ) : (
+              <>
+                <Save className="size-4" aria-hidden />
+                Save changes
+              </>
+            )}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Persistence lands with the API integration — toggles update locally
-          for now.
-        </p>
       </CardContent>
     </Card>
   )

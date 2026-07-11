@@ -1,24 +1,25 @@
 "use client"
 
 /**
- * Capsule creation form (Client Component).
+ * Capsule creation / edit form (Client Component).
  *
- * Supports two modes:
- *   1. **Private** (default) — pick a future delivery date, add one or
- *      more recipients, choose a delivery channel per recipient.
- *   2. **Contribute to wall** — pick a wall from a list (server-rendered
- *      `availableWalls`), the wall's `openDate` becomes the delivery
- *      moment, no recipients needed (the wall page is the delivery).
+ * Two modes:
+ *   1. **Create** (default) — pick a future delivery date, add one or
+ *      more recipients, choose a delivery channel per recipient. Or
+ *      contribute to a wall.
+ *   2. **Edit** — `mode="edit"` plus an `initial` payload and `capsuleId`.
+ *      Wall binding is locked (a wall contribution belongs to the
+ *      wall, not the user). The submit becomes a PATCH.
  *
  * Content is one of text | image | audio | video. For text the user
  * types into a textarea; for media we use UploadThing's `useUploadThing`
  * hook (the typed helper in `lib/uploadthing.ts`). The upload URL +
  * key are stashed in form state and submitted with the rest of the
- * payload when the user clicks "Seal".
+ * payload when the user clicks "Seal" / "Save changes".
  *
- * The submit handler POSTs to `/api/capsules`. On success we push to
- * `/dashboard/capsules`; on error we surface the validation message
- * inline (no `alert`).
+ * Submit: POST `/api/capsules` for create; PATCH `/api/capsules/[id]`
+ * for edit. On success we push to `/dashboard/capsules`; on error
+ * we surface the validation message inline (no `alert`).
  */
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
@@ -36,6 +37,7 @@ import {
   Loader2,
   Lock,
   Users,
+  Save,
 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -137,37 +139,163 @@ export interface AvailableWall {
   openDate: string // ISO
 }
 
+/**
+ * The shape we need to seed the form in edit mode. Mirrors what
+ * `getOwnedCapsule()` returns: title, optional wall, optional future
+ * delivery date, the first content row, and the recipient list. The
+ * form only ever handles one content row today — the extra rows in
+ * `getOwnedCapsule` are picked via `content[0]` by the edit page.
+ */
+export interface InitialCapsuleValues {
+  title: string
+  wallId: string | null
+  deliveryDate: string | null // ISO
+  contentType: "text" | "image" | "audio" | "video"
+  body: string | null
+  mediaUrl: string | null
+  mediaKey: string | null
+  recipients: {
+    name: string | null
+    email: string | null
+    phone: string | null
+    channel: "email" | "sms" | "push"
+  }[]
+}
+
 export function CapsuleForm({
   availableWalls,
+  mode = "create",
+  capsuleId,
+  initial,
 }: {
   availableWalls: AvailableWall[]
+  mode?: "create" | "edit"
+  capsuleId?: string
+  initial?: InitialCapsuleValues
 }) {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
+  const isEdit = mode === "edit" && !!initial
+  // Wall-bound capsules are immutable in v1 (the wall owns the
+  // delivery). When we render the edit form for one, we lock the
+  // wall picker and surface the wall-locked notice.
+  const wallLocked = isEdit && !!initial?.wallId
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      wallId: "",
-      deliveryDate: defaultDeliveryDate(),
-      contentType: "text",
-      body: "",
-      mediaUrl: "",
-      mediaKey: "",
-      recipients: [{ name: "", email: "", phone: "", channel: "email" }],
-    },
+    defaultValues: isEdit
+      ? {
+          title: initial?.title ?? "",
+          wallId: initial?.wallId ?? "",
+          // Pre-fill `deliveryDate` from the existing ISO if it's in
+          // the future, otherwise leave it blank so the user picks
+          // a new one (and the schema's future-date refine kicks in).
+          deliveryDate: initial?.deliveryDate
+            ? toLocalDateTimeInput(initial.deliveryDate)
+            : defaultDeliveryDate(),
+          contentType: initial?.contentType ?? "text",
+          body: initial?.body ?? "",
+          mediaUrl: initial?.mediaUrl ?? "",
+          mediaKey: initial?.mediaKey ?? "",
+          recipients:
+            initial?.recipients && initial.recipients.length > 0
+              ? initial.recipients.map((r) => ({
+                  name: r.name ?? "",
+                  email: r.email ?? "",
+                  phone: r.phone ?? "",
+                  channel: r.channel,
+                }))
+              : [{ name: "", email: "", phone: "", channel: "email" }],
+        }
+      : {
+          title: "",
+          wallId: "",
+          deliveryDate: defaultDeliveryDate(),
+          contentType: "text",
+          body: "",
+          mediaUrl: "",
+          mediaKey: "",
+          recipients: [{ name: "", email: "", phone: "", channel: "email" }],
+        },
   })
 
   const { register, handleSubmit, control, watch, setValue, formState: { errors } } = form
   const recipients = useFieldArray({ control, name: "recipients" })
   const wallId = watch("wallId")
   const contentType = watch("contentType")
-  const isWallMode = !!wallId
+  // When editing a wall-bound capsule we lock the picker and force
+  // wall-mode on; otherwise wallId from the form decides.
+  const isWallMode = wallLocked || !!wallId
 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     setServerError(null)
+    if (isEdit && !capsuleId) {
+      // Shouldn't happen — the edit page passes both. Guard so a
+      // mis-wired caller fails loud instead of silently no-op'ing.
+      setServerError("Edit mode requires a capsule id.")
+      toast.error("Edit mode requires a capsule id.")
+      return
+    }
+
+    if (isEdit) {
+      // PATCH /api/capsules/[id] — edit an existing capsule.
+      // Wall-bound capsules are blocked at the API with 409; we don't
+      // need to defend against that here. The form still submits the
+      // full payload (title, content, recipients) so the server has
+      // everything it needs to atomically replace the rows.
+      const payload = {
+        title: values.title,
+        deliveryDate: values.deliveryDate
+          ? new Date(values.deliveryDate).toISOString()
+          : undefined,
+        content: [
+          values.contentType === "text"
+            ? { contentType: "text" as const, contentText: values.body ?? "" }
+            : {
+                contentType: values.contentType,
+                contentUrl: values.mediaUrl,
+                uploadthingKey: values.mediaKey,
+              },
+        ],
+        recipients: values.recipients.map((r) => ({
+          name: r.name || undefined,
+          email: r.email || undefined,
+          phone: r.phone || undefined,
+          channel: r.channel,
+        })),
+      }
+
+      startTransition(async () => {
+        try {
+          const res = await fetch(`/api/capsules/${capsuleId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+          if (!res.ok) {
+            const data = (await res.json().catch(() => ({}))) as {
+              error?: string
+            }
+            const message = data.error ?? `Request failed (${res.status})`
+            setServerError(message)
+            toast.error(message)
+            return
+          }
+          toast.success("Capsule updated.")
+          router.push("/dashboard/capsules")
+          router.refresh()
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Network error"
+          setServerError(message)
+          toast.error(message)
+        }
+      })
+      return
+    }
+
+    // Create path (unchanged): POST /api/capsules.
     const payload: CapsuleCreatePayload = {
       title: values.title,
       wallId: values.wallId || undefined,
@@ -273,7 +401,10 @@ export function CapsuleForm({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {availableWalls.length > 0 && (
+          {/* The wall picker is hidden in edit mode — wall binding is
+              immutable. The wall notice (further down) still shows if
+              the existing capsule is wall-bound. */}
+          {availableWalls.length > 0 && !isEdit && (
             <div className="space-y-2">
               <Label htmlFor="wallId">Contribute to an existing wall</Label>
               <Select
@@ -429,7 +560,12 @@ export function CapsuleForm({
           {isPending ? (
             <>
               <Loader2 className="size-4 animate-spin" aria-hidden />
-              Sealing…
+              {isEdit ? "Saving…" : "Sealing…"}
+            </>
+          ) : isEdit ? (
+            <>
+              <Save className="size-4" aria-hidden />
+              Save changes
             </>
           ) : isWallMode ? (
             <>
@@ -704,6 +840,18 @@ function defaultDeliveryDate(): string {
   d.setDate(d.getDate() + 1)
   d.setHours(9, 0, 0, 0)
   // `datetime-local` wants `YYYY-MM-DDTHH:mm` in LOCAL time, no timezone.
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+/**
+ * Convert an ISO timestamp to the `YYYY-MM-DDTHH:mm` local format that
+ * `<input type="datetime-local">` expects. Used when seeding the
+ * delivery-date input from the stored `capsule.deliveryDate`.
+ */
+function toLocalDateTimeInput(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return defaultDeliveryDate()
   const pad = (n: number) => String(n).padStart(2, "0")
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }

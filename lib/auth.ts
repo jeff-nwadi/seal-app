@@ -4,8 +4,10 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import * as schema from "@/drizzle/schema";
+import { user } from "@/drizzle/schema";
 import { sendPasswordResetEmail, sendVerificationEmail } from "@/lib/email";
 
 export const auth = betterAuth({
@@ -51,6 +53,15 @@ export interface SessionUser {
   name: string;
   email: string;
   emailVerified: boolean;
+  /**
+   * Notification channel preferences. The DB column is the source of
+   * truth (see `drizzle/schema.ts`); we read the default `true/false`
+   * explicitly so an older row written before the migration landed
+   * doesn't surface `undefined` to a `<Switch checked={…} />`.
+   */
+  notifyEmail: boolean;
+  notifySms: boolean;
+  notifyPush: boolean;
 }
 
 /**
@@ -61,11 +72,30 @@ export interface SessionUser {
 export async function getSession(): Promise<SessionUser | null> {
   const result = await auth.api.getSession({ headers: await headers() });
   if (!result?.user) return null;
+  // Better Auth's adapter returns the columns it knows about; the three
+  // channel flags live in our Drizzle schema, not Better Auth's. Read
+  // them straight from the DB on every session lookup — cheap (PK hit)
+  // and avoids a second query in callers that need them.
+  const rows = await db
+    .select({
+      notifyEmail: user.notifyEmail,
+      notifySms: user.notifySms,
+      notifyPush: user.notifyPush,
+    })
+    .from(user)
+    .where(eq(user.id, result.user.id))
+    .limit(1);
+  const flags = rows[0];
   return {
     id: result.user.id,
     name: result.user.name,
     email: result.user.email,
     emailVerified: result.user.emailVerified,
+    // Coerce to boolean — a NULL (pre-migration row) becomes `true`
+    // for email, `false` for sms/push, matching the schema defaults.
+    notifyEmail: flags?.notifyEmail ?? true,
+    notifySms: flags?.notifySms ?? false,
+    notifyPush: flags?.notifyPush ?? false,
   };
 }
 

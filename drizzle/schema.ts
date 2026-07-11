@@ -32,6 +32,16 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
+  /**
+   * Notification channel preferences — which delivery channels the user
+   * accepts. Defaults match the v1 product stance: email is the only
+   * channel wired in step 1, so it's on by default. SMS and push land
+   * in step 4 and default off so the cron doesn't try to reach users
+   * over channels they haven't opted into.
+   */
+  notifyEmail: boolean("notify_email").default(true).notNull(),
+  notifySms: boolean("notify_sms").default(false).notNull(),
+  notifyPush: boolean("notify_push").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

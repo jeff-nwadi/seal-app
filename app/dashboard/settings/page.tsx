@@ -32,7 +32,13 @@ export default async function DashboardSettingsPage() {
         </CardContent>
       </Card>
 
-      <NotificationChannels initial={{ email: true, sms: false, push: false }} />
+      <NotificationChannels
+        initial={{
+          email: user.notifyEmail,
+          sms: user.notifySms,
+          push: user.notifyPush,
+        }}
+      />
 
       <Card>
         <CardHeader>

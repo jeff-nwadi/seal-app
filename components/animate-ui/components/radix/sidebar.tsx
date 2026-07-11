@@ -204,7 +204,12 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
+          // Mobile panel — use `bg-card` (`#141414`) rather than
+          // `bg-sidebar` (`#0f0f0f`) because the latter is nearly
+          // identical to the body bg (`#0d0d0d`) and reads as
+          // transparent. The right border gives a clean edge against
+          // the page.
+          className="bg-card text-sidebar-foreground w-(--sidebar-width) border-r border-sidebar-border p-0 [&>button]:hidden"
           style={
             {
               '--sidebar-width': SIDEBAR_WIDTH_MOBILE,

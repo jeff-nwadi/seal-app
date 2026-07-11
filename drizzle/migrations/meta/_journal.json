@@ -15,6 +15,13 @@
       "when": 1783745041982,
       "tag": "0001_init_full",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783766943769,
+      "tag": "0002_abandoned_centennial",
+      "breakpoints": true
     }
   ]
 }
