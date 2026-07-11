@@ -60,26 +60,20 @@ export default function AboutSection3() {
         {/* Main Content */}
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2">
-            <h2 className="sm:text-4xl md:text-5xl text-2xl !leading-[110%] font-bold text-foreground mb-8">
-              <VerticalCutReveal
-                splitBy="words"
-                staggerDuration={0.1}
-                staggerFrom="first"
-                reverse={true}
-              >
-                Crafting Messages That Stand the Test of Time.
-              </VerticalCutReveal>
-            </h2>
+            <h2 className="flex flex-col items-start sm:text-2xl md:text-4xl text-xl !leading-[110%] font-bold text-foreground mb-8">
+              <span>Crafting Messages That</span> 
+              <span>Stand the Test of Time.</span> 
+            </h2> 
 
             <div className="grid md:grid-cols-2 gap-8 text-muted-foreground">
-              <div className="sm:text-base text-xs">
+              <div className="text-base">
                 <p className="leading-relaxed text-justify">
                   Seal builds tools that help people communicate across
-                  time. Our Capsule platform lets you schedule messages —
-                  text, audio, video or image — for future delivery to anyone.
-                </p>
+                  time. Our Capsule platform lets you schedule messages 
+                  text, audio, video or image, for future delivery to anyone.
+                </p> 
               </div>
-              <div className="sm:text-base text-xs">
+              <div className="text-base">
                 <p className="leading-relaxed text-justify">
                   Whether it{''}s a private note to a loved one or a shared moment
                   unlocked together on a future date, every message matters.
@@ -101,7 +95,7 @@ export default function AboutSection3() {
                 href="/sign-up"
                 className="btn bg-primary text-primary-foreground ml-auto w-fit"
               >
-                GET STARTED <ArrowRight className="h-4 w-4" />
+                Get Started <ArrowRight className="h-4 w-4" />
               </a>
             </div>
           </div>

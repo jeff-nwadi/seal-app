@@ -12,7 +12,10 @@
  *   1. `NEXT_PUBLIC_BETTER_AUTH_URL` from env (local + production).
  *   2. Vercel-provided `VERCEL_PROJECT_PRODUCTION_URL` (production only).
  *   3. Vercel-provided `VERCEL_URL` (preview deployments).
- *   4. `http://localhost:3000` as a last-resort dev default.
+ *   4. The hardcoded production URL — so login still works on Vercel
+ *      even if every env var is missing. (See `PRODUCTION_BASE_URL`
+ *      below — update it when the production domain changes.)
+ *   5. `http://localhost:3000` as a last-resort dev default.
  *
  * Whatever string comes back is:
  *   - Trimmed of surrounding whitespace / newlines.
@@ -26,12 +29,25 @@
  * if the env var is missing, which keeps local dev working even
  * without the var set.
  */
+
+/**
+ * Hardcoded production base URL.
+ *
+ * Used as a last-resort fallback when no env var resolves to a valid
+ * URL. Without this, a missing or malformed env var on Vercel leaves
+ * the app unable to compute redirect URLs — the user clicks "Sign in",
+ * Better Auth redirects to a relative path, and the session cookie
+ * never gets set. Keep this in sync with the production domain.
+ */
+const PRODUCTION_BASE_URL = "https://seal-app-orcin.vercel.app"
+
 export function resolveBaseUrl(): string {
   // Try each candidate, sanitising as we go.
   const candidates = [
     process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
     process.env.VERCEL_PROJECT_PRODUCTION_URL,
     process.env.VERCEL_URL,
+    PRODUCTION_BASE_URL,
     "http://localhost:3000",
   ]
 

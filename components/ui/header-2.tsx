@@ -124,7 +124,7 @@ export function Header() {
 export const WordmarkIcon = (props: React.ComponentProps<'div'>) => (
 	<div className={cn("flex items-center gap-2 font-bold text-lg text-foreground font-sans", props.className)}>
 		{/* Seal logo — concentric circle with envelope motif */}
-		<Image src={Logo} alt="Seal logo" width={28} height={28} />
+		{/* <Image src={Logo} alt="Seal logo" width={28} height={28} /> */}
 		<span className="tracking-widest uppercase logo font-bold text-foreground">Seal</span>
 	</div>
 );
