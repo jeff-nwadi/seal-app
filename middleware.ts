@@ -11,36 +11,39 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Only gate the dashboard. The auth pages (/sign-in, /sign-up,
-  // /forgot-password, /reset-password, /verify-email) must remain
-  // reachable while the user is signed out.
-  if (!pathname.startsWith("/dashboard")) {
-    return NextResponse.next();
-  }
-
-  // Cheap session-presence check before we let the request hit a
-  // server component. The server-side `requireSession` re-validates
-  // the cookie and is the real gate — this is just to short-circuit
-  // unauthenticated traffic and produce a clean redirect.
-  //
-  // We use Better Auth's `getSessionCookie` helper rather than a hard-
-  // coded cookie name because Better Auth prefixes the session cookie
-  // with `__Secure-` on HTTPS origins (e.g. Vercel production). A bare
-  // `request.cookies.has("better-auth.session_token")` check would
-  // miss the `__Secure-better-auth.session_token` cookie that the
-  // browser actually sends in production, so an authenticated user
-  // would get bounced back to /sign-in even though login succeeded.
   const sessionToken = getSessionCookie(request);
-  if (sessionToken) {
-    return NextResponse.next();
+
+  // If the user is logged in, prevent them from accessing landing and authentication pages,
+  // redirecting them to the dashboard.
+  const authRoutes = [
+    "/",
+    "/sign-in",
+    "/sign-up",
+    "/forgot-password",
+    "/reset-password",
+    "/verify-email",
+  ];
+  if (sessionToken && authRoutes.includes(pathname)) {
+    const dashboardUrl = request.nextUrl.clone();
+    dashboardUrl.pathname = "/dashboard";
+    dashboardUrl.search = ""; // clear query params
+    return NextResponse.redirect(dashboardUrl);
   }
 
-  // No session — redirect to /sign-in with the original path so we can
-  // bounce back after sign-in.
-  const signInUrl = request.nextUrl.clone();
-  signInUrl.pathname = "/sign-in";
-  signInUrl.search = `?from=${encodeURIComponent(pathname)}`;
-  return NextResponse.redirect(signInUrl);
+  // Gate the dashboard and capsule pages.
+  const protectedRoutes = ["/dashboard", "/capsules"];
+  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+
+  if (isProtectedRoute && !sessionToken) {
+    // No session — redirect to /sign-in with the original path so we can
+    // bounce back after sign-in.
+    const signInUrl = request.nextUrl.clone();
+    signInUrl.pathname = "/sign-in";
+    signInUrl.search = `?from=${encodeURIComponent(pathname)}`;
+    return NextResponse.redirect(signInUrl);
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
