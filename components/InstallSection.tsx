@@ -23,7 +23,7 @@ import React from 'react';
 import { Smartphone, Wifi, Bell, Download, Check, Share, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn, handleEmDash } from '@/lib/utils';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
@@ -166,9 +166,7 @@ export function InstallSection() {
             Add Seal to your home screen
           </h2>
           <p className="text-muted-foreground text-sm md:text-base">
-            Seal is a Progressive Web App. Tap the button — your browser
-            will pop up the install dialog and Seal lands on your home
-            screen in seconds.
+            {handleEmDash("Seal is a Progressive Web App. Tap the button — your browser will pop up the install dialog and Seal lands on your home screen in seconds.", "period")}
           </p>
         </div>
 
@@ -180,7 +178,7 @@ export function InstallSection() {
                   <Icon className="size-5" aria-hidden />
                 </div>
                 <h3 className="text-base font-semibold text-foreground">{title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{handleEmDash(body, "period")}</p>
               </CardContent>
             </Card>
           ))}
@@ -266,7 +264,7 @@ function IosHelpCard({ onClose }: { onClose: () => void }) {
           <span className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold">
             3
           </span>
-          <span>Tap &ldquo;Add&rdquo; — Seal opens from your home screen.</span>
+          <span>{handleEmDash('Tap "Add" — Seal opens from your home screen.', "period")}</span>
         </li>
       </ol>
     </div>

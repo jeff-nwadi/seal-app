@@ -1,25 +1,3 @@
-/**
- * POST /api/capsules
- *
- * Creates a new capsule. The request payload is validated against
- * `CapsuleCreateSchema`; on success the capsule is inserted with
- * `status = 'scheduled'` (or `'draft'` for the save-draft path),
- * the content rows are inserted, and (for private capsules) the
- * recipients are inserted.
- *
- * AGENTS.md: "Delivery is cron-driven — don't add synchronous 'send now'
- * logic to the capsule creation route." We only schedule here; the cron
- * picks the row up at `delivery_date`.
- *
- * PRD §2 acceptance criteria honored:
- *   - Story 1: `deliveryDate` is required for private capsules and
- *     must be in the future (validated by zod with a refine).
- *   - Story 2: `contentType` is one of text|image|audio|video; at
- *     least one content row is required.
- *   - Story 5: at least one channel must be selected per recipient.
- *   - Story 7: the new row is `scheduled` — and the route never edits
- *     or deletes delivered rows.
- */
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
@@ -28,6 +6,7 @@ import {
   capsule,
   capsuleContent,
   recipient,
+  notification,
   wall,
   type CapsuleInsert,
   type CapsuleContentInsert,
@@ -234,7 +213,17 @@ export async function POST(request: NextRequest) {
         phone: r.phone ?? null,
         channel: r.channel as DeliveryChannelValue,
       }));
-      await tx.insert(recipient).values(recipientValues);
+      const insertedRecipients = await tx.insert(recipient).values(recipientValues).returning();
+
+      if (input.status === "scheduled") {
+        const notificationValues = insertedRecipients.map((r) => ({
+          recipientId: r.id,
+          channel: r.channel,
+          status: "pending" as const,
+          scheduledFor: c.deliveryDate ?? new Date(),
+        }));
+        await tx.insert(notification).values(notificationValues);
+      }
     }
 
     return c;

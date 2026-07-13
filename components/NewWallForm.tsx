@@ -68,9 +68,9 @@ export function NewWallForm() {
           toast.error(message)
           return
         }
-        const data = (await res.json()) as { id: string }
+        const data = (await res.json()) as { id: string; slug: string }
         toast.success("Wall created — share the URL to collect contributions.")
-        router.push(`/walls/${data.id}`)
+        router.push(`/walls/${data.slug}`)
         router.refresh()
       } catch (err) {
         const message = err instanceof Error ? err.message : "Network error"

@@ -28,6 +28,7 @@ import {
   capsule,
   capsuleContent,
   recipient,
+  notification,
   type CapsuleContentInsert,
   type DeliveryChannelValue,
   type RecipientInsert,
@@ -219,7 +220,17 @@ export async function PATCH(
         phone: r.phone ?? null,
         channel: r.channel as DeliveryChannelValue,
       }));
-      await tx.insert(recipient).values(recipientValues);
+      const insertedRecipients = await tx.insert(recipient).values(recipientValues).returning();
+
+      if (existing.status === "scheduled") {
+        const notificationValues = insertedRecipients.map((r) => ({
+          recipientId: r.id,
+          channel: r.channel,
+          status: "pending" as const,
+          scheduledFor: new Date(input.deliveryDate as string),
+        }));
+        await tx.insert(notification).values(notificationValues);
+      }
     }
 
     const [row] = await tx

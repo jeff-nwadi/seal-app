@@ -29,90 +29,130 @@ const wallCreateSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  let body: unknown;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const parsed = wallCreateSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Validation failed", issues: parsed.error.flatten() },
-      { status: 422 },
-    );
-  }
-
-  const { name, description, openDate, visibility } = parsed.data;
-  const openAt = new Date(openDate);
-  if (Number.isNaN(openAt.getTime()) || openAt.getTime() <= Date.now()) {
-    return NextResponse.json(
-      { error: "Open date must be in the future." },
-      { status: 422 },
-    );
-  }
-
-  // Generate a unique slug. The base slug is derived from the name;
-  // on duplicate-key we append "-2", "-3", … up to 10 attempts, then
-  // fall back to a short random suffix.
-  const base = slugify(name) || "wall";
-  const candidates = [
-    base,
-    ...Array.from({ length: 9 }, (_, i) => `${base}-${i + 2}`),
-    `${base}-${Math.random().toString(36).slice(2, 6)}`,
-  ];
-
-  let inserted: WallRow | null = null;
-  let lastError: unknown = null;
-  for (const candidate of candidates) {
+    let body: unknown;
     try {
-      const values: WallInsert = {
-        name,
-        description: description ?? null,
-        slug: candidate,
-        openDate: openAt,
-        createdBy: session.id,
-        visibility: visibility as WallVisibilityValue,
-      };
-      const rows = await db.insert(wall).values(values).returning();
-      if (rows[0]) {
-        inserted = rows[0];
-        break;
-      }
-    } catch (err) {
-      lastError = err;
-      // 23505 = unique_violation in Postgres. Retry the next candidate.
-      // We do a string check rather than importing the pg codes module.
-      if (
-        err instanceof Error &&
-        !/duplicate key|unique constraint/i.test(err.message)
-      ) {
-        throw err;
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+
+    const parsed = wallCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", issues: parsed.error.flatten() },
+        { status: 422 },
+      );
+    }
+
+    const { name, description, openDate, visibility } = parsed.data;
+    const openAt = new Date(openDate);
+    if (Number.isNaN(openAt.getTime()) || openAt.getTime() <= Date.now()) {
+      return NextResponse.json(
+        { error: "Open date must be in the future." },
+        { status: 422 },
+      );
+    }
+
+    // Generate a unique slug. The base is derived from the name; if it
+    // collides, we append a short random suffix and try again — but
+    // only ONCE. Sequential retry loops (one attempt per candidate) made
+    // this route balloon to 27+ seconds on the serverless cold path
+    // (see git history: 11 round-trips to Neon × cold-start latency).
+    // One insert on the happy path, two on the unlucky collision path.
+    const base = slugify(name) || "wall";
+    const suffixes = ["", `-${randomSuffix()}`];
+    const candidates = suffixes.map((s) => `${base}${s}`);
+
+    let inserted: WallRow | null = null;
+    let lastError: unknown = null;
+    for (const candidate of candidates) {
+      try {
+        const values: WallInsert = {
+          name,
+          description: description ?? null,
+          slug: candidate,
+          openDate: openAt,
+          createdBy: session.id,
+          visibility: visibility as WallVisibilityValue,
+        };
+        const rows = await db.insert(wall).values(values).returning();
+        if (rows[0]) {
+          inserted = rows[0];
+          break;
+        }
+      } catch (err) {
+        lastError = err;
+        // Only swallow unique-constraint violations (Postgres 23505).
+        // Anything else — connection drop, auth, schema mismatch — must
+        // surface to the route's 500 handler, not be silently retried.
+        if (!isUniqueViolation(err)) throw err;
       }
     }
-  }
 
-  if (!inserted) {
-    console.error("wall create: all slug candidates collided", lastError);
+    if (!inserted) {
+      console.error("wall create: both slug candidates collided", lastError);
+      return NextResponse.json(
+        { error: "Could not generate a unique slug. Try a different name." },
+        { status: 500 },
+      );
+    }
+
     return NextResponse.json(
-      { error: "Could not generate a unique slug. Try a different name." },
+      {
+        id: inserted.id,
+        slug: inserted.slug,
+        name: inserted.name,
+        openDate: inserted.openDate.toISOString(),
+      },
+      { status: 201 },
+    );
+  } catch (err) {
+    // Outer catch so any unhandled throw (DB down, missing column,
+    // permission, etc.) returns a JSON body the client can show, instead
+    // of Next.js's opaque 500 page. The stack still hits Vercel logs.
+    const message = err instanceof Error ? err.message : "Unknown server error";
+    const detail =
+      err instanceof Error && process.env.NODE_ENV !== "production"
+        ? { stack: err.stack }
+        : undefined;
+    console.error("POST /api/walls failed:", err);
+    return NextResponse.json(
+      { error: `Server error: ${message}`, detail },
       { status: 500 },
     );
   }
+}
 
-  return NextResponse.json(
-    {
-      id: inserted.id,
-      slug: inserted.slug,
-      name: inserted.name,
-      openDate: inserted.openDate.toISOString(),
-    },
-    { status: 201 },
-  );
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Short, URL-safe random suffix. 6 chars from [a-z0-9] — 36^6 ≈ 2.2B
+ * combinations, so a single retry has effectively zero collision chance.
+ */
+function randomSuffix(): string {
+  return Math.random().toString(36).slice(2, 8);
+}
+
+/**
+ * Detects Postgres unique-constraint violations. The `postgres` driver
+ * surfaces these as errors with `code: "23505"` (or in some wrappers,
+ * the message contains "duplicate key"/"unique constraint" — we check
+ * both to be defensive against driver versions).
+ */
+function isUniqueViolation(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const e = err as { code?: string; message?: string };
+  if (e.code === "23505") return true;
+  if (typeof e.message === "string") {
+    return /duplicate key|unique constraint/i.test(e.message);
+  }
+  return false;
 }

@@ -73,6 +73,13 @@ export default function RootLayout({
     <html
       lang="en"
       className={cn("h-full", "antialiased", montserrat.variable, inter.variable, "font-sans")}
+      // `suppressHydrationWarning` on `<body>` silences the mismatch
+      // caused by browser extensions (ColorZilla et al.) that inject
+      // `cz-shortcut-listen` and similar attributes on the root. The
+      // attributes only exist in the client DOM, never in SSR, so React
+      // can't reconcile them. The warning is harmless but drowns out
+      // real hydration bugs — suppress it only here, not elsewhere.
+      suppressHydrationWarning
     >
       <body className="min-h-full bg-bg text-fg">
         <TooltipProvider>

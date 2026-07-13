@@ -671,6 +671,42 @@ export async function recordNotification(
   return row;
 }
 
+/**
+ * Update an existing notification record's status, sent time, and failure reason.
+ */
+export async function updateNotification(
+  recipientId: string,
+  channel: "email" | "sms" | "push",
+  status: "pending" | "sent" | "failed",
+  sentAt: Date | null,
+  failureReason: string | null,
+): Promise<void> {
+  await db
+    .update(notification)
+    .set({
+      status,
+      sentAt,
+      failureReason,
+    })
+    .where(
+      and(
+        eq(notification.recipientId, recipientId),
+        eq(notification.channel, channel),
+      ),
+    );
+}
+
+/**
+ * Mark a recipient as delivered by updating the delivered_at column.
+ */
+export async function markRecipientDelivered(recipientId: string): Promise<void> {
+  await db
+    .update(recipient)
+    .set({ deliveredAt: new Date() })
+    .where(eq(recipient.id, recipientId));
+}
+
+
 // ---------------------------------------------------------------------------
 // Helpers used by other modules (kept here so access rules live in one file)
 // ---------------------------------------------------------------------------

@@ -35,7 +35,7 @@
   --sidebar-accent: #2c2c2e;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #1f1f22;
-  --sidebar-ring: #ffffff;
+  
 
   /* Brand primary → white (inverted, Threads-style "Add" button). All
      `bg-primary` / `text-primary` references in components resolve to

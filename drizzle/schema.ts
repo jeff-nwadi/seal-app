@@ -335,6 +335,7 @@ export const recipient = pgTable(
     phone: text("phone"),
     channel: deliveryChannel("channel").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
+    deliveredAt: timestamp("delivered_at", { withTimezone: true }),
   },
   (table) => [
     index("recipient_capsuleId_idx").on(table.capsuleId),

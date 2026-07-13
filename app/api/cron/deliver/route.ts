@@ -37,7 +37,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { getDueCapsules, markCapsuleDelivered, markCapsuleFailed, recordNotification } from "@/lib/wall-access";
+import {
+  getDueCapsules,
+  markCapsuleDelivered,
+  markCapsuleFailed,
+  updateNotification,
+  markRecipientDelivered,
+} from "@/lib/wall-access";
 import { sendCapsuleEmail } from "@/lib/delivery";
 
 export const dynamic = "force-dynamic";
@@ -108,45 +114,32 @@ export async function POST(request: NextRequest) {
         // trail reflects "we tried, the channel isn't built yet".
         if (r.channel !== "email") {
           const reason = `Channel "${r.channel}" is not yet wired — coming in v1.1.`;
-          await recordNotification({
-            recipientId: r.id,
-            channel: r.channel,
-            status: "failed",
-            scheduledFor: dueRow.capsule.deliveryDate ?? new Date(),
-            sentAt: null,
-            failureReason: reason,
-          });
+          await updateNotification(r.id, r.channel, "failed", null, reason);
           failed++;
           lastReason = reason;
           continue;
         }
 
-        const outcome = await sendCapsuleEmail({
-          ownerName: dueRow.ownerName,
-          capsule: dueRow.capsule,
-          content: dueRow.content,
-          recipient: r,
-        });
+        let outcome;
+        try {
+          outcome = await sendCapsuleEmail({
+            ownerName: dueRow.ownerName,
+            capsule: dueRow.capsule,
+            content: dueRow.content,
+            recipient: r,
+          });
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : String(error);
+          console.error(`[cron:deliver] Error sending email to ${r.email}:`, error);
+          outcome = { ok: false as const, reason };
+        }
 
         if (outcome.ok) {
-          await recordNotification({
-            recipientId: r.id,
-            channel: "email",
-            status: "sent",
-            scheduledFor: dueRow.capsule.deliveryDate ?? new Date(),
-            sentAt: new Date(),
-            failureReason: null,
-          });
+          await updateNotification(r.id, "email", "sent", new Date(), null);
+          await markRecipientDelivered(r.id);
           sent++;
         } else {
-          await recordNotification({
-            recipientId: r.id,
-            channel: "email",
-            status: "failed",
-            scheduledFor: dueRow.capsule.deliveryDate ?? new Date(),
-            sentAt: null,
-            failureReason: outcome.reason,
-          });
+          await updateNotification(r.id, "email", "failed", null, outcome.reason);
           failed++;
           lastReason = outcome.reason;
         }
