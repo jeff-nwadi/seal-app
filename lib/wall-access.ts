@@ -561,6 +561,15 @@ export interface DueCapsule {
   content: CapsuleContentRow[];
   ownerName: string;
   ownerEmail: string;
+  /**
+   * Owner flags needed by the per-channel branches. Email doesn't
+   * currently use them (email is always on by default) but SMS/push
+   * gate on these so we don't try to deliver over a channel the
+   * owner hasn't opted into.
+   */
+  ownerId: string;
+  notifySms: boolean;
+  notifyPush: boolean;
 }
 
 export async function getDueCapsules(now: Date = new Date()): Promise<DueCapsule[]> {
@@ -569,6 +578,9 @@ export async function getDueCapsules(now: Date = new Date()): Promise<DueCapsule
       capsule: capsule,
       ownerName: user.name,
       ownerEmail: user.email,
+      ownerId: user.id,
+      notifySms: user.notifySms,
+      notifyPush: user.notifyPush,
     })
     .from(capsule)
     .innerJoin(user, eq(user.id, capsule.ownerId))
@@ -614,6 +626,9 @@ export async function getDueCapsules(now: Date = new Date()): Promise<DueCapsule
     capsule: r.capsule,
     ownerName: r.ownerName,
     ownerEmail: r.ownerEmail,
+    ownerId: r.ownerId,
+    notifySms: r.notifySms,
+    notifyPush: r.notifyPush,
     recipients: recipientsByCapsule.get(r.capsule.id) ?? [],
     content: contentByCapsule.get(r.capsule.id) ?? [],
   }));

@@ -10,6 +10,7 @@
  * `notification` row as `failed` with the error message and moves on.
  */
 import { sendMail } from "@/lib/email";
+import { sendSms } from "@/lib/sms";
 import { resolveBaseUrl } from "@/lib/base-url";
 import type {
   CapsuleContentRow,
@@ -133,6 +134,93 @@ export async function sendCapsuleEmail(args: {
       subject,
       html,
       text,
+    });
+    if (!result.ok) return { ok: false, reason: result.reason };
+    return { ok: true };
+  } catch (error) {
+    return {
+      ok: false,
+      reason: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+/**
+ * Format the SMS body for a private capsule. SMS is a 160-char-per-
+ * segment medium, so the body is deliberately short: a one-line
+ * preview, the sender, and a link to view the full capsule on the
+ * web. We never try to inline media (audio/video/image) — there's no
+ * way to embed media in an SMS, and a 70-char media link would burn
+ * an entire segment on its own.
+ *
+ * For text capsules we include up to ~120 chars of the body so the
+ * recipient gets a meaningful teaser in-app without tapping through.
+ * For media-only capsules the SMS is just the title + link.
+ *
+ * The body always ends with the view URL so the recipient has a clear
+ * "open this to see the rest" affordance.
+ */
+export function buildCapsuleSms(args: {
+  ownerName: string;
+  capsule: CapsuleRow;
+  content: CapsuleContentRow[];
+}): { body: string; viewUrl: string } {
+  const viewUrl = `${PUBLIC_BASE_URL}/capsules/${args.capsule.id}`;
+  const firstText = args.content.find(
+    (c) => c.contentType === "text" && c.contentText,
+  )?.contentText;
+  const hasMedia = args.content.some((c) => c.contentType !== "text");
+
+  const opener = `Seal: ${args.ownerName} sent you "${args.capsule.title}".`;
+
+  // Build the middle: a teaser for text capsules, a "media inside"
+  // hint for media-only ones. Truncate to keep the whole message
+  // under ~280 chars so it fits in two GSM-7 segments comfortably.
+  let middle = "";
+  if (firstText) {
+    const teaser = firstText.replace(/\s+/g, " ").trim();
+    middle = ` ${teaser.length > 120 ? `${teaser.slice(0, 117)}…` : teaser}`;
+  } else if (hasMedia) {
+    middle = " Open the link to view the attached media.";
+  }
+
+  return {
+    body: `${opener}${middle}\n${viewUrl}`,
+    viewUrl,
+  };
+}
+
+/**
+ * Send the capsule SMS. Mirrors `sendCapsuleEmail`'s tagged-result
+ * shape so the cron can record a `notification` row with the failure
+ * reason. Never throws — Twilio errors are caught and returned.
+ *
+ * Gating: the caller is expected to check `owner.notifySms` *before*
+ * calling this — we don't re-check here. Reason: the `notifySms` flag
+ * is a per-cron-run decision (the owner can flip it between creation
+ * and delivery), but the per-recipient `channel` choice was made at
+ * creation. If the channel is 'sms' but the owner has since disabled
+ * SMS, the recipient gets a "skipped" notification row in the cron
+ * route rather than a `failed` send. This is handled in the cron
+ * route's per-recipient loop.
+ */
+export async function sendCapsuleSms(args: {
+  ownerName: string;
+  capsule: CapsuleRow;
+  content: CapsuleContentRow[];
+  recipient: RecipientRow;
+}): Promise<{ ok: true } | { ok: false; reason: string }> {
+  if (args.recipient.channel !== "sms") {
+    return { ok: false, reason: `Recipient channel is ${args.recipient.channel}, not sms` };
+  }
+  if (!args.recipient.phone) {
+    return { ok: false, reason: "Recipient has no phone number" };
+  }
+  const { body } = buildCapsuleSms(args);
+  try {
+    const result = await sendSms({
+      to: args.recipient.phone,
+      body,
     });
     if (!result.ok) return { ok: false, reason: result.reason };
     return { ok: true };

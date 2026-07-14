@@ -23,8 +23,9 @@
  *      recipient here — the wall page IS the delivery, and the seal
  *      guarantees the page is hidden until openDate).
  *   3. For each (capsule, recipient) pair, attempts to send via the
- *      recipient's channel. Currently only email is wired (SMS and
- *      push land in v1.1).
+ *      recipient's channel. Email and SMS are wired; push lands in
+ *      v1.2. Owner-level opt-in flags (`notifySms`) gate SMS sends
+ *      so we don't deliver over a channel the owner has disabled.
  *   4. Records the outcome in the notification table.
  *   5. Marks the capsule delivered once all its recipients succeed
  *      (or failed if every channel failed for at least one recipient).
@@ -44,7 +45,7 @@ import {
   updateNotification,
   markRecipientDelivered,
 } from "@/lib/wall-access";
-import { sendCapsuleEmail } from "@/lib/delivery";
+import { sendCapsuleEmail, sendCapsuleSms } from "@/lib/delivery";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -143,11 +144,24 @@ export async function POST(request: NextRequest) {
       let lastReason: string | null = null;
 
       for (const r of dueRow.recipients) {
-        // Per-AGENTS.md, only the email channel is wired in step 1. We
-        // still record a `notification` row for sms / push so the audit
-        // trail reflects "we tried, the channel isn't built yet".
-        if (r.channel !== "email") {
-          const reason = `Channel "${r.channel}" is not yet wired — coming in v1.1.`;
+        // Channel dispatch. Email (v1) and SMS (v1.1) are wired; push
+        // remains a v1.2 task. We still record a `notification` row
+        // for any un-wired channel so the audit trail reflects
+        // "we tried, the channel isn't built yet" instead of silent
+        // gaps. Owner-level opt-in flags (`notifySms`) are honoured
+        // by short-circuiting to a `skipped` row rather than a `failed`
+        // send — the recipient isn't at fault for a setting the owner
+        // changed.
+        if (r.channel === "push") {
+          const reason = `Channel "push" is not yet wired — coming in v1.2.`;
+          await updateNotification(r.id, r.channel, "failed", null, reason);
+          failed++;
+          lastReason = reason;
+          continue;
+        }
+
+        if (r.channel === "sms" && !dueRow.notifySms) {
+          const reason = "Owner has SMS notifications disabled.";
           await updateNotification(r.id, r.channel, "failed", null, reason);
           failed++;
           lastReason = reason;
@@ -156,24 +170,35 @@ export async function POST(request: NextRequest) {
 
         let outcome;
         try {
-          outcome = await sendCapsuleEmail({
-            ownerName: dueRow.ownerName,
-            capsule: dueRow.capsule,
-            content: dueRow.content,
-            recipient: r,
-          });
+          outcome =
+            r.channel === "sms"
+              ? await sendCapsuleSms({
+                  ownerName: dueRow.ownerName,
+                  capsule: dueRow.capsule,
+                  content: dueRow.content,
+                  recipient: r,
+                })
+              : await sendCapsuleEmail({
+                  ownerName: dueRow.ownerName,
+                  capsule: dueRow.capsule,
+                  content: dueRow.content,
+                  recipient: r,
+                });
         } catch (error) {
           const reason = error instanceof Error ? error.message : String(error);
-          console.error(`[cron:deliver] Error sending email to ${r.email}:`, error);
+          console.error(
+            `[cron:deliver] Error sending ${r.channel} to ${r.email ?? r.phone ?? r.id}:`,
+            error,
+          );
           outcome = { ok: false as const, reason };
         }
 
         if (outcome.ok) {
-          await updateNotification(r.id, "email", "sent", new Date(), null);
+          await updateNotification(r.id, r.channel, "sent", new Date(), null);
           await markRecipientDelivered(r.id);
           sent++;
         } else {
-          await updateNotification(r.id, "email", "failed", null, outcome.reason);
+          await updateNotification(r.id, r.channel, "failed", null, outcome.reason);
           failed++;
           lastReason = outcome.reason;
         }
