@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { Navbar } from "@/components/Navbar";
-import { GlowyWavesHero } from "@/components/ui/glowy-waves-hero-shadcnui";
+import { DottedSurfaceHero } from "@/components/ui/dotted-surface-hero";
 import { Feature } from "@/components/Feature";
 import { HowItWorks } from "@/components/HowItWorks";
 import { About } from "@/components/About";
@@ -15,7 +15,7 @@ export default function Home() {
 			<Navbar />
 
 			{/* Main Hero Section */}
-			<GlowyWavesHero />
+			<DottedSurfaceHero />
 
 			{/* About Section */}
 			<About />

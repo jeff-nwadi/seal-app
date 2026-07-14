@@ -59,20 +59,45 @@ export const runtime = "nodejs";
  */
 const DELIVER_LOCK_KEY = 0x5345414c; // 'SEAL' in ASCII
 
-function isCronAuthorized(request: NextRequest): boolean {
+function isCronAuthorized(
+  request: NextRequest,
+): { ok: true } | { ok: false; reason: string } {
   const expected = process.env.CRON_SECRET;
   if (!expected) {
     // In dev, allow unauthenticated calls so the cron can be exercised
-    // locally with `curl http://localhost:3000/api/cron/deliver`.
-    return process.env.NODE_ENV !== "production";
+    // locally with `curl http://localhost:3000/api/cron/deliver`. In
+    // production we refuse with a *specific* reason — a silent 401
+    // here was the cause of an extended "notifications broken on prod"
+    // debugging session where the operator didn't know whether the
+    // secret was missing, wrong, or just rejected.
+    if (process.env.NODE_ENV !== "production") return { ok: true };
+    return {
+      ok: false,
+      reason:
+        "CRON_SECRET is not set in the Vercel project environment. " +
+        "Add it under Settings → Environment Variables and redeploy.",
+    };
   }
   const auth = request.headers.get("authorization") ?? "";
-  return auth === `Bearer ${expected}`;
+  if (auth !== `Bearer ${expected}`) {
+    return {
+      ok: false,
+      reason:
+        "Authorization header is missing or does not match CRON_SECRET. " +
+        "Vercel sets `Authorization: Bearer <CRON_SECRET>` automatically — " +
+        "verify the env var on Vercel matches the one in vercel.json's cron config.",
+    };
+  }
+  return { ok: true };
 }
 
 export async function POST(request: NextRequest) {
-  if (!isCronAuthorized(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const authz = isCronAuthorized(request);
+  if (!authz.ok) {
+    return NextResponse.json(
+      { error: "Unauthorized", reason: authz.reason },
+      { status: 401 },
+    );
   }
 
   // Try to grab the global deliver lock. If another deliver run is

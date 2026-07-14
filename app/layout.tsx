@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 import { RegisterSW } from "@/components/register-sw";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -82,21 +83,28 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full bg-bg text-fg">
-        <TooltipProvider>
-          {children}
-          <Toaster
-            theme="dark"
-            position="top-center"
-            richColors
-            toastOptions={{
-              classNames: {
-                toast:
-                  "border border-border bg-card text-card-foreground shadow-md",
-              },
-            }}
-          />
-        </TooltipProvider>
-        <RegisterSW />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <TooltipProvider>
+            {children}
+            <Toaster
+              theme="dark"
+              position="top-center"
+              richColors
+              toastOptions={{
+                classNames: {
+                  toast:
+                    "border border-border bg-card text-card-foreground shadow-md",
+                },
+              }}
+            />
+          </TooltipProvider>
+          <RegisterSW />
+        </ThemeProvider>
       </body>
     </html>
   );
