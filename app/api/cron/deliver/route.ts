@@ -80,12 +80,21 @@ function isCronAuthorized(
   }
   const auth = request.headers.get("authorization") ?? "";
   if (auth !== `Bearer ${expected}`) {
+    // Build a *non-secret* fingerprint of the expected value so the
+    // operator can compare it to what they're sending. The first 4
+    // chars + last 2 chars + length is enough to spot a typo or a
+    // paste artefact (e.g. trailing newline) without leaking the
+    // actual secret into the response body or Vercel function logs.
+    const fp = (s: string) =>
+      `${s.length}:${s.slice(0, 4)}...${s.slice(-2)}`;
     return {
       ok: false,
       reason:
-        "Authorization header is missing or does not match CRON_SECRET. " +
-        "Vercel sets `Authorization: Bearer <CRON_SECRET>` automatically — " +
-        "verify the env var on Vercel matches the one in vercel.json's cron config.",
+        "Authorization header does not match CRON_SECRET. " +
+        `Expected fingerprint ${fp(expected)}, ` +
+        `received header fingerprint ${fp(auth.replace(/^Bearer\s+/, ""))}. ` +
+        "Likely causes: trailing whitespace or newline in the Vercel env " +
+        "var, or a typo when copy-pasting the secret into your curl.",
     };
   }
   return { ok: true };
