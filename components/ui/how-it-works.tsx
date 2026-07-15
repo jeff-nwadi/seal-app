@@ -63,35 +63,35 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
   const stepsData = [
     {
       icon: <Search className="h-6 w-6" />,
-      title: "Enter your query",
+      title: "Write your message",
       description:
-        "Enter part name or article number, and we'll instantly check availability across thousands of stores.",
+        "Type, record, or upload a text, audio, video, or image capsule. Add a recipient, or contribute it to a shared wall.",
       benefits: [
-        "Smart search understands even imprecise queries",
-        "Automatic city detection",
-        "Search history for quick access",
+        "Any media — one capsule, one flow",
+        "Pick a single recipient or a public wall",
+        "Saves as a draft until you're ready",
       ],
     },
     {
       icon: <Layers className="h-6 w-6" />,
-      title: "Choose the best offer",
+      title: "Pick the delivery date",
       description:
-        "Compare prices, location and availability, choose the optimal option.",
+        "Choose the exact moment your capsule should arrive. We store it encrypted until then — no one sees it early.",
       benefits: [
-        "Sort by price, distance and rating",
-        "Filter by availability and manufacturer",
-        "Detailed information about each offer",
+        "Date and time, down to the minute",
+        "Editable until the moment it delivers",
+        "Once sealed, the content is permanent",
       ],
     },
     {
       icon: <Zap className="h-6 w-6" />,
-      title: "Contact the store",
+      title: "We deliver it on time",
       description:
-        "Call the store directly or request a callback through our service.",
+        "A scheduled job runs every 10 minutes and dispatches any capsule whose delivery moment has arrived — by email today, SMS and push soon.",
       benefits: [
-        "Direct contact without intermediaries",
-        "Parts reservation capability",
-        "Route building to store",
+        "Email channel is live today",
+        "SMS and web-push in the next release",
+        "Wall contributions unlock together on open_date",
       ],
     },
   ];
@@ -99,17 +99,17 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
   return (
     <section
       id="how-it-works"
-      className={cn("w-full bg-background py-16 sm:py-24 border-t border-border", className)}
+      className={cn("w-full bg-background border-y border-border", className)}
       {...props}
     >
-      <div className="container mx-auto px-4 max-w-6xl">
+      <div className="mx-auto max-w-6xl px-6 py-24 md:px-8 md:py-32 lg:px-12">
         {/* Section Header */}
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <span className="eyebrow mb-3 block">Process</span>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+          <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground md:text-4xl">
             How it works
           </h2>
-          <p className="mt-4 text-muted-foreground text-sm md:text-base">
+          <p className="mt-4 text-sm text-muted-foreground md:text-base">
             Our service uses advanced technologies for instant auto parts search
             across thousands of stores in your city
           </p>

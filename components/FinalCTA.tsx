@@ -21,16 +21,16 @@ export function FinalCTA() {
   return (
     <section
       id="get-started"
-      className="py-24 px-4 bg-background border-t border-border"
+      className="bg-background border-y border-border"
     >
-      <div className="max-w-3xl mx-auto text-center">
+      <div className="mx-auto max-w-3xl px-6 py-24 text-center md:px-8 md:py-32">
         <span className="eyebrow mb-4 block">Ready when you are</span>
-        <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-5">
+        <h2 className="text-balance text-4xl font-bold tracking-tight text-foreground md:text-5xl">
           Seal a message for someone you love.
         </h2>
-        <p className="text-base md:text-lg text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+        <p className="mx-auto mb-10 mt-5 max-w-2xl text-base text-muted-foreground md:text-lg">
           Free to start. Schedule a note, an audio clip, or a video and
-          we'll deliver it on the date you pick.
+          we’ll deliver it on the date you pick.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <ButtonLink

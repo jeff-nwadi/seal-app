@@ -194,6 +194,9 @@
 html {
   background: var(--color-bg);
   color: var(--color-fg);
+  /* The unconditional animation kill-switch further down resets this to
+     `auto`. We leave the smooth value here for the brief window before
+     that block parses, so direct loads of `/` (no JS) still feel right. */
   scroll-behavior: smooth;
 }
 
@@ -204,6 +207,16 @@ body {
   font-feature-settings: "ss01";
   line-height: 1.55;
   font-size: 17px;
+  /* `text-wrap: pretty` keeps descriptions from leaving an orphan word on
+     the last line. Headings opt in to `balance` themselves (better for
+     multi-line display copy). */
+  text-wrap: pretty;
+}
+
+/* Section anchor offset — every <section id="…"> gets enough top space
+   to clear the sticky header when the nav scrolls to it. */
+:where(section[id]) {
+  scroll-margin-top: 96px;
 }
 
 ::selection {
@@ -344,9 +357,14 @@ html {
   animation: none !important;
 }
 /* Inline transform/opacity set by framer-motion — collapse to final
-   state (the values the user would have seen at the end of the tween). */
-[style*="transform"],
-[style*="opacity"] {
+   state (the values the user would have seen at the end of the tween).
+   The WebGL canvas used by the DottedSurface hero background must
+   keep its inline `transform` / `opacity` for the renderer to position
+   the camera matrix correctly, so we exclude anything tagged with
+   `data-webgl` from this rule (the component sets this attribute on
+   the canvas it creates). */
+[style*="transform"]:not([data-webgl]),
+[style*="opacity"]:not([data-webgl]) {
   transform: none !important;
   opacity: 1 !important;
 }

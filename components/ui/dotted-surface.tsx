@@ -67,6 +67,13 @@ export function DottedSurface({ className, ...props }: DottedSurfaceProps) {
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor(fogColor.getHex(), 0);
 
+        // Mark the canvas so the global motion kill-switch in
+        // `app/globals.css` knows to leave its inline `transform` /
+        // `opacity` alone — the WebGL renderer relies on those to
+        // position the camera matrix, and clobbering them makes the
+        // dots disappear off-screen.
+        renderer.domElement.setAttribute('data-webgl', '');
+
         containerRef.current.appendChild(renderer.domElement);
 
         // Create particles

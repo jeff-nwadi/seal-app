@@ -142,9 +142,9 @@ export function InstallSection() {
     return (
       <section
         id="install"
-        className="py-16 px-4 bg-background border-t border-border"
+        className="bg-background border-y border-border"
       >
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="mx-auto max-w-3xl px-6 py-16 text-center md:px-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm text-muted-foreground">
             <Check className="size-4 text-primary" aria-hidden />
             Seal is installed on this device.
@@ -157,15 +157,15 @@ export function InstallSection() {
   return (
     <section
       id="install"
-      className="py-20 px-4 bg-background border-t border-border"
+      className="bg-background border-y border-border"
     >
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center max-w-2xl mx-auto mb-10">
+      <div className="mx-auto max-w-6xl px-6 py-24 md:px-8 md:py-32 lg:px-12">
+        <div className="mx-auto mb-14 max-w-2xl text-center">
           <span className="eyebrow mb-3 block">Install Seal</span>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-foreground">
+          <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground md:text-4xl">
             Add Seal to your home screen
           </h2>
-          <p className="text-muted-foreground text-sm md:text-base">
+          <p className="mt-4 text-sm text-muted-foreground md:text-base">
             {handleEmDash("Seal is a Progressive Web App. Tap the button — your browser will pop up the install dialog and Seal lands on your home screen in seconds.", "period")}
           </p>
         </div>

@@ -1,106 +1,131 @@
 "use client";
-import { VerticalCutReveal } from "@/components/ui/vertical-cut-reveal";
-import { ArrowRight } from "lucide-react";
+
+import {
+  Mail,
+  Mic,
+  Image as ImageIcon,
+  Video,
+  Users,
+  Smartphone,
+} from "lucide-react";
 
 /**
- * About section. Previously animated scroll-into-view reveals via
- * framer-motion. Animations are disabled site-wide, so this is now a
- * static composition.
+ * About section — what Seal is, who it is for, what you can do with it.
+ *
+ * Layout (Flipghost-style calm two-column):
+ *   1. Centered header block — eyebrow, headline, intro paragraph.
+ *   2. Two-column body — short story on the left, "what you can do"
+ *      bullet list on the right.
+ *   3. Hairline divider at the bottom, so the section rhythm matches
+ *      the rest of the landing page.
+ *
+ * No imagery, no inline stats, no signup button — those live in the
+ * hero and the FinalCTA. This section reads as one calm block of
+ * prose so it doesn't compete with the page's primary CTAs.
  */
 export default function AboutSection3() {
   return (
-    <section className="py-8 px-4 bg-background border-t border-border">
-      <div className="max-w-6xl mx-auto">
-        <div className="relative">
-          {/* Header with eyebrow */}
-          <div className="flex justify-between items-center mb-8 w-[85%] absolute lg:top-4 md:top-0 sm:-top-2 -top-3 z-10">
-            <div className="flex items-center gap-2 text-xl">
-              <span className="text-primary" aria-hidden>✱</span>
-              <span className="eyebrow">WHO WE ARE</span>
-            </div>
-          </div>
-
-          {/* Decorative SVG image */}
-          <figure className="relative group">
-            <svg className="w-full" width="100%" height="100%" viewBox="0 0 100 40">
-              <defs>
-                <clipPath id="clip-inverted" clipPathUnits="objectBoundingBox">
-                  <path
-                    d="M0.0998072 1H0.422076H0.749756C0.767072 1 0.774207 0.961783 0.77561 0.942675V0.807325C0.777053 0.743631 0.791844 0.731953 0.799059 0.734076H0.969813C0.996268 0.730255 1.00088 0.693206 0.999875 0.675159V0.0700637C0.999875 0.0254777 0.985045 0.00477707 0.977629 0H0.902473C0.854975 0 0.890448 0.138535 0.850165 0.138535H0.0204424C0.00408849 0.142357 0 0.180467 0 0.199045V0.410828C0 0.449045 0.0136283 0.46603 0.0204424 0.469745H0.0523086C0.0696245 0.471019 0.0735527 0.497877 0.0733523 0.511146V0.915605C0.0723903 0.983121 0.090588 1 0.0998072 1Z"
-                    fill="#D9D9D9"
-                  />
-                </clipPath>
-              </defs>
-              <image
-                clipPath="url(#clip-inverted)"
-                preserveAspectRatio="xMidYMid slice"
-                width="100%"
-                height="100%"
-                xlinkHref="https://images.unsplash.com/photo-1718601980986-0ce75101d52d?w=1200&auto=format&fit=crop"
-              />
-            </svg>
-          </figure>
-
-          {/* Stats */}
-          <div className="flex flex-wrap lg:justify-start justify-between items-center py-3 text-sm">
-            <div className="lg:absolute right-0 bottom-16 flex lg:flex-col flex-row-reverse lg:gap-0 gap-4">
-              <div className="flex lg:text-4xl sm:text-3xl text-2xl items-center gap-2 mb-2">
-                <span className="text-primary font-semibold">100+</span>
-                <span className="text-muted-foreground uppercase">brands</span>
-              </div>
-              <div className="flex items-center gap-2 mb-2 sm:text-base text-xs">
-                <span className="text-primary font-bold">30%</span>
-                <span className="text-muted-foreground">higher engagement</span>
-                <span className="text-border lg:hidden block">|</span>
-              </div>
-            </div>
-          </div>
+    <section
+      id="about"
+      className="bg-background"
+    >
+      <div className="mx-auto max-w-6xl px-6 py-24 md:px-8 md:py-32 lg:px-12">
+        {/* Header */}
+        <div className="mx-auto mb-16 max-w-2xl text-center">
+          <span className="eyebrow mb-3 block">About Seal</span>
+          <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+            A time capsule for the things you want to say at the right moment.
+          </h2>
+          <p className="mt-5 text-base text-muted-foreground md:text-lg">
+            Seal is a small tool for one of the oldest feelings — wanting
+            to tell someone something, and wanting to time it just right.
+          </p>
         </div>
 
-        {/* Main Content */}
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="md:col-span-2">
-            <h2 className="flex flex-col items-start sm:text-2xl md:text-4xl text-xl !leading-[110%] font-bold text-foreground mb-8">
-              <span>Crafting Messages That</span> 
-              <span>Stand the Test of Time.</span> 
-            </h2> 
-
-            <div className="grid md:grid-cols-2 gap-8 text-muted-foreground">
-              <div className="text-base">
-                <p className="leading-relaxed text-justify">
-                  Seal builds tools that help people communicate across
-                  time. Our Capsule platform lets you schedule messages 
-                  text, audio, video or image, for future delivery to anyone.
-                </p> 
-              </div>
-              <div className="text-base">
-                <p className="leading-relaxed text-justify">
-                  Whether it{''}s a private note to a loved one or a shared moment
-                  unlocked together on a future date, every message matters.
-                  We ensure your words arrive exactly when they should.
-                </p>
-              </div>
-            </div>
+        {/* Two-column body */}
+        <div className="grid gap-14 md:grid-cols-2 md:gap-16">
+          {/* Left — the story */}
+          <div className="space-y-5 text-base leading-relaxed text-muted-foreground">
+            <p>
+              We built Seal because the messages that matter most are
+              rarely the ones we send in the moment. The birthday card
+              you wish you&apos;d mailed. The note to your future self on
+              the morning of a big change. The video for the people you
+              love, opened together on a date that means something.
+            </p>
+            <p>
+              Capsule is the medium. You write it today, pick a date, and
+              we hold onto it until then — privately to one recipient, or
+              as a contribution to a public wall that unlocks for
+              everyone at the same moment.
+            </p>
+            <p>
+              We don&apos;t add reactions, comments, or analytics. We just
+              make sure your words arrive exactly when they should, on the
+              channel the recipient prefers.
+            </p>
           </div>
 
-          <div className="md:col-span-1">
-            <div className="text-right">
-              <div className="mb-6">
-                <p className="text-foreground font-medium mb-4">
-                  Ready to send a message to the future?
-                </p>
-              </div>
-
-              <a
-                href="/sign-up"
-                className="btn bg-primary text-primary-foreground ml-auto w-fit"
-              >
-                Get Started <ArrowRight className="h-4 w-4" />
-              </a>
-            </div>
+          {/* Right — what you can do */}
+          <div>
+            <p className="eyebrow mb-5 block">What you can do</p>
+            <ul className="space-y-5">
+              <Capability
+                icon={Mail}
+                title="Send a private message to one person"
+                body="A letter, a voice note, a video. Sealed until the date you pick."
+              />
+              <Capability
+                icon={Users}
+                title="Start a wall that unlocks together"
+                body="A wedding, a class reunion, a team milestone. Anyone with the link contributes their own capsule."
+              />
+              <Capability
+                icon={ImageIcon}
+                title="Use any media — text, audio, video, or image"
+                body="One capsule, one flow. The format matches the moment."
+              />
+              <Capability
+                icon={Smartphone}
+                title="Reach them on the channel they prefer"
+                body="Email today. SMS and web-push in the next release."
+              />
+            </ul>
           </div>
         </div>
       </div>
+
+      {/* Hairline divider — same rhythm as the rest of the page */}
+      <div className="mx-auto max-w-6xl px-6 md:px-8 lg:px-12">
+        <div className="hairline" />
+      </div>
     </section>
+  );
+}
+
+function Capability({
+  icon: Icon,
+  title,
+  body,
+}: {
+  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+  title: string;
+  body: string;
+}) {
+  return (
+    <li className="flex items-start gap-4">
+      <span
+        className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+        aria-hidden
+      >
+        <Icon className="size-4" />
+      </span>
+      <div>
+        <p className="text-base font-semibold text-foreground">{title}</p>
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+          {body}
+        </p>
+      </div>
+    </li>
   );
 }

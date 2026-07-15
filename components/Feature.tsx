@@ -69,14 +69,17 @@ const features: Feature[] = [
 
 export function Feature() {
   return (
-    <section id="features" className="py-20 px-4 bg-background border-t border-border">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center max-w-2xl mx-auto mb-12">
+    <section
+      id="features"
+      className="bg-background border-y border-border"
+    >
+      <div className="mx-auto max-w-6xl px-6 py-24 md:px-8 md:py-32 lg:px-12">
+        <div className="mx-auto mb-14 max-w-2xl text-center">
           <span className="eyebrow mb-3 block">What Seal does</span>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-foreground">
+          <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground md:text-4xl">
             Messages sealed today, delivered when it matters.
           </h2>
-          <p className="text-muted-foreground text-sm md:text-base">
+          <p className="mt-4 text-sm text-muted-foreground md:text-base">
             Six things Seal does well. Every one of them is wired
             end-to-end today — no placeholder roadmap, no "coming
             soon" next to a live feature.
